@@ -110,6 +110,34 @@ Note by default this will use the webhooks route: `/runtime/webhooks/mcp/sse`.  
     ```
 1. **List Tools**.  Click on a tool and **Run Tool**.  
 
+## Verify local blob storage in Azurite
+
+After testing the snippet save functionality locally, you can verify that blobs are being stored correctly in your local Azurite storage emulator.
+
+### Using Azure Storage Explorer
+
+1. Open Azure Storage Explorer
+1. In the left panel, expand **Emulator & Attached** → **Storage Accounts** → **(Emulator - Default Ports) (Key)**
+1. Navigate to **Blob Containers** → **snippets**
+1. You should see any saved snippets as blob files in this container
+1. Double-click on any blob to view its contents and verify the snippet data was saved correctly
+
+### Using Azure CLI (Alternative)
+
+If you prefer using the command line, you can also verify blobs using Azure CLI with the storage emulator:
+
+```shell
+# List blobs in the snippets container
+az storage blob list --container-name snippets --connection-string "DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;BlobEndpoint=http://127.0.0.1:10000/devstoreaccount1;"
+```
+
+```shell
+# Download a specific blob to view its contents
+az storage blob download --container-name snippets --name <blob-name> --file <local-file-path> --connection-string "DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;BlobEndpoint=http://127.0.0.1:10000/devstoreaccount1;"
+```
+
+This verification step ensures your MCP server is correctly interacting with the local storage emulator and that the blob storage functionality is working as expected before deploying to Azure.
+
 ## Deploy to Azure for Remote MCP
 
 Run this [azd](https://aka.ms/azd) command to provision the function app, with any required Azure resources, and deploy your code:
