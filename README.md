@@ -30,15 +30,20 @@ If you're looking for this sample in more languages check out the [Node.js/TypeS
 
 ## Prerequisites
 
+### Required for all development approaches:
 + [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0)
 + [Azure Functions Core Tools](https://learn.microsoft.com/azure/azure-functions/functions-run-local?pivots=programming-language-csharp#install-the-azure-functions-core-tools) >= `4.0.7030`
-+ [Azure Developer CLI](https://aka.ms/azd)
-+ To use Visual Studio to run and debug locally:
-  + [Visual Studio 2022](https://visualstudio.microsoft.com/vs/).
-  + Make sure to select the **Azure development** workload during installation.
-+ To use Visual Studio Code to run and debug locally:
-  + [Visual Studio Code](https://code.visualstudio.com/)
-  + [Azure Functions extension](https://marketplace.visualstudio.com/items?itemName=ms-azuretools.vscode-azurefunctions)
++ [Azure Developer CLI](https://aka.ms/azd) (for deployment)
+
+### For Visual Studio development:
++ [Visual Studio 2022](https://visualstudio.microsoft.com/vs/)
++ Make sure to select the **Azure development** workload during installation
+
+### For Visual Studio Code development:
++ [Visual Studio Code](https://code.visualstudio.com/)
++ [Azure Functions extension](https://marketplace.visualstudio.com/items?itemName=ms-azuretools.vscode-azurefunctions)
+
+> **Choose one**: You can use either Visual Studio OR Visual Studio Code. Both provide full debugging support, but the setup steps differ slightly.
 
 Below is the architecture diagram for the Remote MCP Server using Azure Functions:
 
@@ -86,7 +91,11 @@ Choose your preferred development environment:
 1. Visual Studio will build the project and launch the Azure Functions host
 1. The MCP server will be available at `http://localhost:7071/runtime/webhooks/mcp/sse`
 
->**Note**: Both approaches use the same underlying Azure Functions host (`func start`), but Visual Studio provides integrated debugging capabilities through F5.
+> **Key Differences:**
+> - **VS Code**: Uses external terminal and Azure Functions extension, URL uses `0.0.0.0`
+> - **Visual Studio**: Integrated debugging experience with F5, URL uses `localhost`
+> - Both approaches use the same underlying Azure Functions host (`func start`)
+> - Both provide full debugging capabilities with breakpoints
 
 Note by default this will use the webhooks route: `/runtime/webhooks/mcp/sse`.  Later we will use this in Azure to set the key on client/host calls: `/runtime/webhooks/mcp/sse?code=<system_key>`
 
@@ -100,6 +109,8 @@ Once your Azure Functions MCP server is running locally (via either Visual Studi
     ```shell
     http://0.0.0.0:7071/runtime/webhooks/mcp/sse
     ```
+    > **Note**: If you're running from Visual Studio (not VS Code), use `http://localhost:7071/runtime/webhooks/mcp/sse` instead.
+
 1. **List MCP Servers** from command palette and start the server
 1. In Copilot chat agent mode enter a prompt to trigger the tool, e.g., select some code and enter this prompt
 
@@ -132,7 +143,20 @@ Once your Azure Functions MCP server is running locally (via either Visual Studi
     ```shell
     http://0.0.0.0:7071/runtime/webhooks/mcp/sse
     ```
-1. **List Tools**.  Click on a tool and **Run Tool**.  
+    > **Note**: If you're running from Visual Studio (not VS Code), use `http://localhost:7071/runtime/webhooks/mcp/sse` instead.
+
+1. **List Tools**.  Click on a tool and **Run Tool**.
+
+### Troubleshooting Local Development
+
+**Problem**: Connection refused when trying to connect to MCP server
+- **Solution**: Ensure Azurite is running (`docker run -p 10000:10000 -p 10001:10001 -p 10002:10002 mcr.microsoft.com/azure-storage/azurite`)
+
+**Problem**: Wrong URL (0.0.0.0 vs localhost)
+- **Solution**: Use `http://0.0.0.0:7071/runtime/webhooks/mcp/sse` for VS Code, `http://localhost:7071/runtime/webhooks/mcp/sse` for Visual Studio
+
+**Problem**: Visual Studio F5 doesn't work
+- **Solution**: Ensure Azure development workload is installed and `FunctionsMcpTool` is set as startup project  
 
 ## Deploy to Azure for Remote MCP
 
