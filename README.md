@@ -218,7 +218,7 @@ azd down
 
 ## Source Code
 
-The function code for the `GetSnippet` and `SaveSnippet` endpoints are defined in [`SnippetsTool.cs`](./src/SnippetsTool.cs). The `McpToolsTrigger` attribute applied to the async `Run` method exposes the code function as an MCP Server.
+The function code for the MCP tools are defined in [`SnippetsTool.cs`](./src/SnippetsTool.cs) and [`HelloTool.cs`](./src/HelloTool.cs). The `McpToolsTrigger` attribute applied to the function methods exposes the code function as an MCP Server.
 
 This shows the code for a few MCP server examples (get string, get object, save object):  
 
@@ -250,6 +250,70 @@ public string SaveSnippet(
     return snippet;
 }
 ```
+
+### Complex Types Support
+
+The MCP Tools extension supports complex data types including arrays, objects, numbers, and booleans. Here are examples from [`SnippetsTool.cs`](./src/SnippetsTool.cs) that demonstrate using complex types with `McpToolProperty`:
+
+```csharp
+[Function(nameof(BulkSaveSnippets))]
+public string BulkSaveSnippets(
+    [McpToolTrigger("bulk_save_snippets", "Save multiple code snippets at once")] ToolInvocationContext context,
+    [McpToolProperty("snippets", ArrayPropertyType, "Array of snippet objects containing name, content, description, and tags")]
+        List<SnippetInfo> snippets,
+    [McpToolProperty("overwrite-existing", BooleanPropertyType, "Whether to overwrite existing snippets with same names")]
+        bool overwriteExisting = false
+)
+{
+    logger.LogInformation("Bulk saving {Count} snippets", snippets.Count);
+    
+    var results = new List<object>();
+    foreach (var snippet in snippets)
+    {
+        // Process each snippet in the array
+        results.Add(new
+        {
+            Name = snippet.Name,
+            Status = "Success",
+            Message = $"Snippet '{snippet.Name}' saved successfully"
+        });
+    }
+    
+    return JsonSerializer.Serialize(results, new JsonSerializerOptions { WriteIndented = true });
+}
+
+[Function(nameof(SearchSnippets))]
+public string SearchSnippets(
+    [McpToolTrigger("search_snippets", "Search for snippets using various criteria")] ToolInvocationContext context,
+    [McpToolProperty("search-criteria", ObjectPropertyType, "Search criteria object with tags, name pattern, and content inclusion options")]
+        SnippetSearchCriteria searchCriteria
+)
+{
+    // Process complex object with multiple properties
+    var filteredResults = mockResults.AsEnumerable();
+    
+    if (searchCriteria.Tags.Any())
+    {
+        filteredResults = filteredResults.Where(s => 
+            searchCriteria.Tags.Any(tag => s.Tags.Contains(tag, StringComparer.OrdinalIgnoreCase)));
+    }
+    
+    // Return filtered snippet results
+    return JsonSerializer.Serialize(filteredResults.ToList());
+}
+```
+
+### Supported Property Types
+
+The following property types are supported in `McpToolProperty`:
+
+- `StringPropertyType` - `"string"` for text data
+- `ArrayPropertyType` - `"array"` for arrays and lists
+- `ObjectPropertyType` - `"object"` for complex objects
+- `NumberPropertyType` - `"number"` for numeric data
+- `BooleanPropertyType` - `"boolean"` for true/false values
+
+These constants are defined in [`ToolsInformation.cs`](./src/ToolsInformation.cs).
 
 ## Next Steps
 
