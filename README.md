@@ -190,7 +190,7 @@ azd down
 
 ## Source Code
 
-The function code for the MCP tools are defined in [`SnippetsTool.cs`](./src/SnippetsTool.cs), [`HelloTool.cs`](./src/HelloTool.cs), and [`OrderTool.cs`](./src/OrderTool.cs). The `McpToolsTrigger` attribute applied to the function methods exposes the code function as an MCP Server.
+The function code for the MCP tools are defined in [`SnippetsTool.cs`](./src/SnippetsTool.cs) and [`HelloTool.cs`](./src/HelloTool.cs). The `McpToolsTrigger` attribute applied to the function methods exposes the code function as an MCP Server.
 
 This shows the code for a few MCP server examples (get string, get object, save object):  
 
@@ -225,44 +225,53 @@ public string SaveSnippet(
 
 ### Complex Types Support
 
-The MCP Tools extension supports complex data types including arrays, objects, numbers, and booleans. Here's an example from [`OrderTool.cs`](./src/OrderTool.cs) that demonstrates using complex types with `McpToolProperty`:
+The MCP Tools extension supports complex data types including arrays, objects, numbers, and booleans. Here are examples from [`SnippetsTool.cs`](./src/SnippetsTool.cs) that demonstrate using complex types with `McpToolProperty`:
 
 ```csharp
-[Function(nameof(ProcessOrder))]
-public string ProcessOrder(
-    [McpToolTrigger("process_order", "Process an order with multiple items")] ToolInvocationContext context,
-    [McpToolProperty("order-items", ArrayPropertyType, "List of order items, each containing item ID, quantity, and price")]
-        List<OrderItem> orderItems,
-    [McpToolProperty("customer-name", StringPropertyType, "Name of the customer placing the order")]
-        string customerName,
-    [McpToolProperty("is-urgent", BooleanPropertyType, "Whether this order should be processed urgently")]
-        bool isUrgent,
-    [McpToolProperty("discount-percent", NumberPropertyType, "Discount percentage to apply (0-100)")]
-        decimal discountPercent = 0
+[Function(nameof(BulkSaveSnippets))]
+public string BulkSaveSnippets(
+    [McpToolTrigger("bulk_save_snippets", "Save multiple code snippets at once")] ToolInvocationContext context,
+    [McpToolProperty("snippets", ArrayPropertyType, "Array of snippet objects containing name, content, description, and tags")]
+        List<SnippetInfo> snippets,
+    [McpToolProperty("overwrite-existing", BooleanPropertyType, "Whether to overwrite existing snippets with same names")]
+        bool overwriteExisting = false
 )
 {
-    // Process the order with complex data types
-    var totalAmount = orderItems.Sum(item => item.Price * item.Quantity);
-    var discountAmount = totalAmount * (discountPercent / 100);
-    var finalAmount = totalAmount - discountAmount;
+    logger.LogInformation("Bulk saving {Count} snippets", snippets.Count);
     
-    // Return JSON result
-    return JsonSerializer.Serialize(new { 
-        OrderId = Guid.NewGuid().ToString(), 
-        TotalAmount = finalAmount,
-        Items = orderItems 
-    });
+    var results = new List<object>();
+    foreach (var snippet in snippets)
+    {
+        // Process each snippet in the array
+        results.Add(new
+        {
+            Name = snippet.Name,
+            Status = "Success",
+            Message = $"Snippet '{snippet.Name}' saved successfully"
+        });
+    }
+    
+    return JsonSerializer.Serialize(results, new JsonSerializerOptions { WriteIndented = true });
 }
 
-[Function(nameof(ValidateOrderData))]
-public string ValidateOrderData(
-    [McpToolTrigger("validate_order", "Validate order data structure")] ToolInvocationContext context,
-    [McpToolProperty("order-data", ObjectPropertyType, "Complete order data object containing all order information")]
-        OrderSummary orderData
+[Function(nameof(SearchSnippets))]
+public string SearchSnippets(
+    [McpToolTrigger("search_snippets", "Search for snippets using various criteria")] ToolInvocationContext context,
+    [McpToolProperty("search-criteria", ObjectPropertyType, "Search criteria object with tags, name pattern, and content inclusion options")]
+        SnippetSearchCriteria searchCriteria
 )
 {
-    // Validate complex object data
-    // ... validation logic
+    // Process complex object with multiple properties
+    var filteredResults = mockResults.AsEnumerable();
+    
+    if (searchCriteria.Tags.Any())
+    {
+        filteredResults = filteredResults.Where(s => 
+            searchCriteria.Tags.Any(tag => s.Tags.Contains(tag, StringComparer.OrdinalIgnoreCase)));
+    }
+    
+    // Return filtered snippet results
+    return JsonSerializer.Serialize(filteredResults.ToList());
 }
 ```
 
