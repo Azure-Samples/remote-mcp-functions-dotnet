@@ -57,8 +57,13 @@ An Azure Storage Emulator is needed for this particular sample because we will s
 
 >**Note** if you use Azurite coming from VS Code extension you need to run `Azurite: Start` now or you will see errors.
 
-## Run your MCP Server locally from the terminal
+## Run your MCP Server locally
 
+Choose your preferred development environment:
+
+### Option A: Using Visual Studio Code
+
+#### Run from Terminal
 1. From the `src` folder, run this command to start the Functions host locally:
 
     ```shell
@@ -66,11 +71,30 @@ An Azure Storage Emulator is needed for this particular sample because we will s
     func start
     ```
 
+#### Run and Debug from VS Code
+1. Open the repository in Visual Studio Code
+1. Press `F5` or go to **Run > Start Debugging**
+1. VS Code will build the project and start the Azure Functions host
+1. The MCP server will be available at `http://0.0.0.0:7071/runtime/webhooks/mcp/sse`
+
+### Option B: Using Visual Studio 
+
+1. Open `FunctionsMcpTool.sln` in Visual Studio 2022
+1. Ensure you have the **Azure development** workload installed
+1. Set `FunctionsMcpTool` as the startup project (right-click the project and select "Set as Startup Project")
+1. Press `F5` or click **Debug > Start Debugging**
+1. Visual Studio will build the project and launch the Azure Functions host
+1. The MCP server will be available at `http://localhost:7071/runtime/webhooks/mcp/sse`
+
+>**Note**: Both approaches use the same underlying Azure Functions host (`func start`), but Visual Studio provides integrated debugging capabilities through F5.
+
 Note by default this will use the webhooks route: `/runtime/webhooks/mcp/sse`.  Later we will use this in Azure to set the key on client/host calls: `/runtime/webhooks/mcp/sse?code=<system_key>`
 
-## Connect to the *local* MCP server from within a client/host
+## Connect to your *local* MCP server from MCP client tools
 
-### VS Code - Copilot Edits
+Once your Azure Functions MCP server is running locally (via either Visual Studio Code or Visual Studio), you can connect to it from various MCP client tools:
+
+### Using VS Code with GitHub Copilot
 
 1. **Add MCP Server** from command palette and add URL to your running Function app's SSE endpoint:
     ```shell
@@ -92,9 +116,9 @@ Note by default this will use the webhooks route: `/runtime/webhooks/mcp/sse`.  
     ```
 1. When prompted to run the tool, consent by clicking **Continue**
 
-1. When you're done, press Ctrl+C in the terminal window to stop the `func.exe` host process.
+1. When you're done, press Ctrl+C in the terminal window to stop the `func.exe` host process (or stop debugging in your IDE).
 
-### MCP Inspector
+### Using MCP Inspector
 
 1. In a **new terminal window**, install and run MCP Inspector
 
