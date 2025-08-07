@@ -24,9 +24,9 @@ public class SnippetsTool(ILogger<SnippetsTool> logger)
     public string SaveSnippet(
         [McpToolTrigger(SaveSnippetToolName, SaveSnippetToolDescription)]
             ToolInvocationContext context,
-        [McpToolProperty(SnippetNamePropertyName, PropertyType, SnippetNamePropertyDescription)]
+        [McpToolProperty(SnippetNamePropertyName, StringPropertyType, SnippetNamePropertyDescription)]
             string name,
-        [McpToolProperty(SnippetPropertyName, PropertyType, SnippetPropertyDescription)]
+        [McpToolProperty(SnippetPropertyName, StringPropertyType, SnippetPropertyDescription)]
             string snippet
     )
     {

@@ -190,7 +190,7 @@ azd down
 
 ## Source Code
 
-The function code for the `GetSnippet` and `SaveSnippet` endpoints are defined in [`SnippetsTool.cs`](./src/SnippetsTool.cs). The `McpToolsTrigger` attribute applied to the async `Run` method exposes the code function as an MCP Server.
+The function code for the MCP tools are defined in [`SnippetsTool.cs`](./src/SnippetsTool.cs), [`HelloTool.cs`](./src/HelloTool.cs), and [`OrderTool.cs`](./src/OrderTool.cs). The `McpToolsTrigger` attribute applied to the function methods exposes the code function as an MCP Server.
 
 This shows the code for a few MCP server examples (get string, get object, save object):  
 
@@ -222,6 +222,61 @@ public string SaveSnippet(
     return snippet;
 }
 ```
+
+### Complex Types Support
+
+The MCP Tools extension supports complex data types including arrays, objects, numbers, and booleans. Here's an example from [`OrderTool.cs`](./src/OrderTool.cs) that demonstrates using complex types with `McpToolProperty`:
+
+```csharp
+[Function(nameof(ProcessOrder))]
+public string ProcessOrder(
+    [McpToolTrigger("process_order", "Process an order with multiple items")] ToolInvocationContext context,
+    [McpToolProperty("order-items", ArrayPropertyType, "List of order items, each containing item ID, quantity, and price")]
+        List<OrderItem> orderItems,
+    [McpToolProperty("customer-name", StringPropertyType, "Name of the customer placing the order")]
+        string customerName,
+    [McpToolProperty("is-urgent", BooleanPropertyType, "Whether this order should be processed urgently")]
+        bool isUrgent,
+    [McpToolProperty("discount-percent", NumberPropertyType, "Discount percentage to apply (0-100)")]
+        decimal discountPercent = 0
+)
+{
+    // Process the order with complex data types
+    var totalAmount = orderItems.Sum(item => item.Price * item.Quantity);
+    var discountAmount = totalAmount * (discountPercent / 100);
+    var finalAmount = totalAmount - discountAmount;
+    
+    // Return JSON result
+    return JsonSerializer.Serialize(new { 
+        OrderId = Guid.NewGuid().ToString(), 
+        TotalAmount = finalAmount,
+        Items = orderItems 
+    });
+}
+
+[Function(nameof(ValidateOrderData))]
+public string ValidateOrderData(
+    [McpToolTrigger("validate_order", "Validate order data structure")] ToolInvocationContext context,
+    [McpToolProperty("order-data", ObjectPropertyType, "Complete order data object containing all order information")]
+        OrderSummary orderData
+)
+{
+    // Validate complex object data
+    // ... validation logic
+}
+```
+
+### Supported Property Types
+
+The following property types are supported in `McpToolProperty`:
+
+- `StringPropertyType` - `"string"` for text data
+- `ArrayPropertyType` - `"array"` for arrays and lists
+- `ObjectPropertyType` - `"object"` for complex objects
+- `NumberPropertyType` - `"number"` for numeric data
+- `BooleanPropertyType` - `"boolean"` for true/false values
+
+These constants are defined in [`ToolsInformation.cs`](./src/ToolsInformation.cs).
 
 ## Next Steps
 
