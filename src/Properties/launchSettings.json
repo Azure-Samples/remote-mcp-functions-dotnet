@@ -1,9 +1,14 @@
 {
   "profiles": {
-    "MetadataTestsOOP": {
-      "commandName": "Project",
-      "commandLineArgs": "--port 7005",
-      "launchBrowser": false
+    "FunctionsMcpTool": {
+      "commandName": "Executable",
+      "executablePath": "func",
+      "commandLineArgs": "start",
+      "workingDirectory": "$(ProjectDir)",
+      "launchBrowser": false,
+      "environmentVariables": {
+        "AZURE_FUNCTIONS_ENVIRONMENT": "Development"
+      }
     }
   }
 }
