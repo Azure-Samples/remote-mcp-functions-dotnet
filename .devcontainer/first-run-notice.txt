@@ -1,14 +1,16 @@
 👋 Welcome to the Functions Codespace! You are on the Functions Quickstarts image.
 It includes everything needed to run through our tutorials and quickstart applications.
 
-Recommend run Azurite in a new terminal window first:
-```
-npx azurite --location ~/.azurite
-``
-
 To run a function enter folder with host.json and run:
 ```
+cd src
 func start
 ``
 
-📚 Functions docs can be found at: https://learn.microsoft.com/en-us/azure/azure-functions/
+📚 Setup complete.  Functions docs can be found at: https://learn.microsoft.com/en-us/azure/azure-functions/
+
+
+Automatically starting Azurite in a new terminal window first via:
+```
+npx azurite --location ~/.azurite
+``
