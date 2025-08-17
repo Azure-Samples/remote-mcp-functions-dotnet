@@ -21,6 +21,12 @@ RUN curl -fsSL https://deb.nodesource.com/setup_lts.x | sudo -E bash - \
 # Preview with aarch64 support
 RUN sudo npm install -g azure-functions-core-tools@4.0.7332-preview1
 
+# Install MCP Inspector
+RUN sudo npm install -g @modelcontextprotocol/inspector
+
+# Install azurite to emulate Azure Storage
+RUN sudo npm install -g azurite
+
 # RUN curl https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > microsoft.gpg \
 #     && sudo mv microsoft.gpg /etc/apt/trusted.gpg.d/microsoft.gpg \
 #     && sudo sh -c 'echo "deb [arch=amd64] https://packages.microsoft.com/repos/microsoft-ubuntu-$(lsb_release -cs)-prod $(lsb_release -cs) main" > /etc/apt/sources.list.d/dotnetdev.list' \
