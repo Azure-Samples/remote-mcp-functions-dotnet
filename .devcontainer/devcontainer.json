@@ -1,37 +1,75 @@
+// For format details, see https://aka.ms/devcontainer.json. For config options, see the
+// README at: https://github.com/devcontainers/templates/tree/main/src/dotnet
 {
-    "name": "Functions Quickstarts Codespace",
+	"name": "Functions Quickstarts Codespace - C# (.NET), aarch64 ready",
+	// Or use a Dockerfile or Docker Compose file. More info: https://containers.dev/guide/dockerfile
     "dockerFile": "Dockerfile",
-    "features": {
+
+	// Features to add to the dev container. More info: https://containers.dev/features.
+	"features": {
+		//"ghcr.io/devcontainers/features/node:1": {}
       "azure-cli": "latest"
     },
-    "customizations": {
-      "vscode": {
-        "extensions": [
-          "ms-azuretools.vscode-bicep",
-          "ms-azuretools.vscode-docker",
-          "ms-azuretools.vscode-azurefunctions",
-          "GitHub.copilot",
-          "humao.rest-client",
-          "ms-dotnettools.csdevkit"
-        ]
-      }
-    },
-    "mounts": [
-      // Mount docker-in-docker library volume
-      "source=codespaces-linux-var-lib-docker,target=/var/lib/docker,type=volume"
-    ],
-    // Always run image-defined docker-init.sh to enable docker-in-docker
-    "overrideCommand": false,
-    "remoteUser": "codespace",
-    "runArgs": [
-      // Enable ptrace-based debugging for Go in container
-      "--cap-add=SYS_PTRACE",
-      "--security-opt",
-      "seccomp=unconfined",
-  
-      // Enable docker-in-docker configuration
-      "--init",
-      "--privileged"
-    ]
-  }
+
+	// Use 'forwardPorts' to make a list of ports inside the container available locally.
+	// Expose the ports for the MCP Inspector
+	,"forwardPorts": [3001,6277]
+	// "portsAttributes": {
+	//		"5001": {
+	//			"protocol": "https"
+	//		}
+	// }
+
+	// Use 'postCreateCommand' to run commands after the container is created.
+	// PROMPT_DIRTRIM will show only the last 1 directory in the path.
+	,"postCreateCommand": "echo 'export PROMPT_DIRTRIM=1' >> ~/.bashrc"
+
+	// Configure tool-specific properties.
+	,"customizations": {
+		"vscode": {
+			"extensions": [
+				"ms-dotnettools.csdevkit",
+				"ms-dotnettools.dotnet-interactive-vscode",
+				"ms-azuretools.vscode-bicep",
+				"ms-azuretools.vscode-docker",
+				"ms-azuretools.vscode-azurefunctions",
+				"GitHub.copilot",
+				"humao.rest-client"
+			]
+		}
+	}
+    // "mounts": [
+    //   // Mount docker-in-docker library volume
+    //   "source=codespaces-linux-var-lib-docker,target=/var/lib/docker,type=volume"
+    // ],
+    // // Always run image-defined docker-init.sh to enable docker-in-docker
+    // "overrideCommand": false,
+    // "remoteUser": "codespace",
+    // "runArgs": [
+    //   // Enable docker-in-docker configuration
+    //   "--init",
+    //   "--privileged"
+    // ]
+}
+	// Uncomment to connect as root instead. More info: https://aka.ms/dev-containers-non-root.
+	// "remoteUser": "root"
+
+// {
+//     "name": "Functions Quickstarts Codespace",
+//     "dockerFile": "Dockerfile",
+//     "features": {
+//       "azure-cli": "latest"
+//     },
+//     // "customizations": {
+//       "vscode": {
+//         "extensions": [
+//           "ms-azuretools.vscode-bicep",
+//           "ms-azuretools.vscode-docker",
+//           "ms-azuretools.vscode-azurefunctions",
+//           "GitHub.copilot",
+//           "humao.rest-client"
+//         ]
+//       }
+//     },
+
   

@@ -48,11 +48,10 @@ Below is the architecture diagram for the Remote MCP Server using Azure Function
 
 An Azure Storage Emulator is needed for this particular sample because we will save and get snippets from blob storage. 
 
-1. Start Azurite
+1. Start Azurite in a new/separate Terminal window
 
     ```shell
-    docker run -p 10000:10000 -p 10001:10001 -p 10002:10002 \
-        mcr.microsoft.com/azure-storage/azurite
+    npx azurite --location /.azurite
     ```
 
 >**Note** if you use Azurite coming from VS Code extension you need to run `Azurite: Start` now or you will see errors.
