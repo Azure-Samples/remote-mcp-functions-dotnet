@@ -51,7 +51,7 @@ An Azure Storage Emulator is needed for this particular sample because we will s
 1. Start Azurite in a new/separate Terminal window
 
     ```shell
-    npx azurite --location /.azurite
+    npx azurite --location ~/.azurite
     ```
 
 >**Note** if you use Azurite coming from VS Code extension you need to run `Azurite: Start` now or you will see errors.
