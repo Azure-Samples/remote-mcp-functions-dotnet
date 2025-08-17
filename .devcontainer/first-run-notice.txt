@@ -3,7 +3,7 @@ It includes everything needed to run through our tutorials and quickstart applic
 
 Recommend run Azurite in a new terminal window first:
 ```
-npx azurite --location /.azurite
+npx azurite --location ~/.azurite
 ``
 
 To run a function enter folder with host.json and run:
