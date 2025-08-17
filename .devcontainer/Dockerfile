@@ -1,4 +1,4 @@
-FROM mcr.microsoft.com/devcontainers/dotnet:1-9.0
+FROM mcr.microsoft.com/devcontainers/dotnet:1-8.0
 
 # # Copy custom first notice message.
 # COPY first-run-notice.txt /tmp/staging/
