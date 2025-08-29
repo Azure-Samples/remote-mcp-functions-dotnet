@@ -1,6 +1,6 @@
 <mxfile host="65bd71144e">
     <diagram id="remote-mcp-architecture" name="MCP Server Solution Architecture">
-        <mxGraphModel dx="1689" dy="1077" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1100" pageHeight="850" math="0" shadow="0">
+        <mxGraphModel dx="450" dy="496" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1100" pageHeight="850" math="0" shadow="0">
             <root>
                 <mxCell id="0"/>
                 <mxCell id="1" parent="0"/>
@@ -13,35 +13,35 @@
                 <mxCell id="mcp-inspector" value="MCP Inspector" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontColor=#333333;" parent="client-container" vertex="1">
                     <mxGeometry x="20" y="130" width="130" height="60" as="geometry"/>
                 </mxCell>
-                <mxCell id="client-to-function" value="SSE Connection&#xa;/runtime/webhooks/mcp/sse" style="endArrow=classic;html=1;rounded=0;fontSize=11;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" source="client-container" target="11" edge="1">
+                <mxCell id="client-to-function" value="MCP Endpoint&lt;br&gt;/runtime/webhooks/mcp" style="endArrow=classic;html=1;rounded=0;fontSize=11;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" source="client-container" target="11" edge="1">
                     <mxGeometry y="30" width="50" height="50" relative="1" as="geometry">
                         <mxPoint x="220" y="210" as="sourcePoint"/>
                         <mxPoint x="310" y="280" as="targetPoint"/>
                         <mxPoint as="offset"/>
                     </mxGeometry>
                 </mxCell>
-                <mxCell id="11" value="Azure Function App (.NET 8 Isolated)" style="swimlane;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;startSize=30;fontSize=14;fontStyle=1;swimlaneFillColor=#f5f5f5;" vertex="1" parent="1">
+                <mxCell id="11" value="Azure Function App (.NET 8 Isolated)" style="swimlane;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;startSize=30;fontSize=14;fontStyle=1;swimlaneFillColor=#f5f5f5;" parent="1" vertex="1">
                     <mxGeometry x="360" y="110" width="470" height="340" as="geometry"/>
                 </mxCell>
-                <mxCell id="12" value="MCP Tools" style="swimlane;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;startSize=30;" vertex="1" parent="11">
+                <mxCell id="12" value="MCP Tools" style="swimlane;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;startSize=30;" parent="11" vertex="1">
                     <mxGeometry x="20" y="50" width="430" height="270" as="geometry"/>
                 </mxCell>
-                <mxCell id="13" value="&lt;b&gt;hello&lt;/b&gt;&lt;br&gt;Simple hello world MCP Tool" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="12">
+                <mxCell id="13" value="&lt;b&gt;hello&lt;/b&gt;&lt;br&gt;Simple hello world MCP Tool" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" parent="12" vertex="1">
                     <mxGeometry x="20" y="50" width="160" height="50" as="geometry"/>
                 </mxCell>
-                <mxCell id="14" value="&lt;b&gt;get_snippets&lt;/b&gt;&lt;br&gt;Gets code snippets from collection" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="12">
+                <mxCell id="14" value="&lt;b&gt;get_snippets&lt;/b&gt;&lt;br&gt;Gets code snippets from collection" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" parent="12" vertex="1">
                     <mxGeometry x="20" y="130" width="160" height="50" as="geometry"/>
                 </mxCell>
-                <mxCell id="15" value="&lt;b&gt;save_snippet&lt;/b&gt;&lt;br&gt;Saves code snippets to collection" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="12">
+                <mxCell id="15" value="&lt;b&gt;save_snippet&lt;/b&gt;&lt;br&gt;Saves code snippets to collection" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" parent="12" vertex="1">
                     <mxGeometry x="20" y="210" width="160" height="50" as="geometry"/>
                 </mxCell>
-                <mxCell id="16" value="MCP Tool Registry&#xa;EnableMcpToolMetadata()" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontStyle=1" vertex="1" parent="12">
+                <mxCell id="16" value="MCP Tool Registry&#xa;EnableMcpToolMetadata()" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontStyle=1" parent="12" vertex="1">
                     <mxGeometry x="205" y="50" width="200" height="50" as="geometry"/>
                 </mxCell>
-                <mxCell id="17" value="MCP Tool Bindings&#xa;McpToolTrigger, McpToolProperty" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" vertex="1" parent="12">
+                <mxCell id="17" value="MCP Tool Bindings&#xa;McpToolTrigger, McpToolProperty" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" parent="12" vertex="1">
                     <mxGeometry x="205" y="130" width="200" height="50" as="geometry"/>
                 </mxCell>
-                <mxCell id="18" value="SSE Endpoint&#xa;/runtime/webhooks/mcp/sse" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" vertex="1" parent="12">
+                <mxCell id="18" value="SSE Endpoint&#xa;/runtime/webhooks/mcp/sse" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" parent="12" vertex="1">
                     <mxGeometry x="205" y="210" width="200" height="50" as="geometry"/>
                 </mxCell>
             </root>

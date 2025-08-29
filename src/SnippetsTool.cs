@@ -5,7 +5,7 @@ using static FunctionsSnippetTool.ToolsInformation;
 
 namespace FunctionsSnippetTool;
 
-public class SnippetsTool(ILogger<SnippetsTool> logger)
+public class SnippetsTool()
 {
     private const string BlobPath = "snippets/{mcptoolargs." + SnippetNamePropertyName + "}.json";
 
@@ -24,9 +24,9 @@ public class SnippetsTool(ILogger<SnippetsTool> logger)
     public string SaveSnippet(
         [McpToolTrigger(SaveSnippetToolName, SaveSnippetToolDescription)]
             ToolInvocationContext context,
-        [McpToolProperty(SnippetNamePropertyName, PropertyType, SnippetNamePropertyDescription)]
+        [McpToolProperty(SnippetNamePropertyName, PropertyType, SnippetNamePropertyDescription, Required = true)]
             string name,
-        [McpToolProperty(SnippetPropertyName, PropertyType, SnippetPropertyDescription)]
+        [McpToolProperty(SnippetPropertyName, PropertyType, SnippetPropertyDescription, Required = true)]
             string snippet
     )
     {

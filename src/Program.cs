@@ -12,6 +12,6 @@ builder.EnableMcpToolMetadata();
 // input bindings:
 builder
     .ConfigureMcpTool(GetSnippetToolName)
-    .WithProperty(SnippetNamePropertyName, PropertyType, SnippetNamePropertyDescription);
+    .WithProperty(SnippetNamePropertyName, PropertyType, SnippetNamePropertyDescription, required: true);
 
 builder.Build().Run();
