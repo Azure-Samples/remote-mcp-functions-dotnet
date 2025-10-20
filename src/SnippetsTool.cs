@@ -1,6 +1,5 @@
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Extensions.Mcp;
-using Microsoft.Extensions.Logging;
 using static FunctionsSnippetTool.ToolsInformation;
 
 namespace FunctionsSnippetTool;
@@ -24,9 +23,9 @@ public class SnippetsTool()
     public string SaveSnippet(
         [McpToolTrigger(SaveSnippetToolName, SaveSnippetToolDescription)]
             ToolInvocationContext context,
-        [McpToolProperty(SnippetNamePropertyName, PropertyType, SnippetNamePropertyDescription, Required = true)]
+        [McpToolProperty(SnippetNamePropertyName, SnippetNamePropertyDescription, true)]
             string name,
-        [McpToolProperty(SnippetPropertyName, PropertyType, SnippetPropertyDescription, Required = true)]
+        [McpToolProperty(SnippetPropertyName, SnippetPropertyDescription, true)]
             string snippet
     )
     {
