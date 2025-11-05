@@ -76,7 +76,7 @@ docker run -p 10000:10000 -p 10001:10001 -p 10002:10002 \
 npx azurite --silent --location azurite --debug azurite/debug.log
 ```
 
-> **Note**: This uses the same default ports as Docker (10000, 10001, 10002). The `--location` parameter specifies where Azurite stores data. You can change `azurite` to any directory you prefer (e.g., `c:\azurite` on Windows).
+> **Note**: This uses the same default ports as Docker (10000, 10001, 10002). The `--location` parameter specifies where Azurite stores data. You can use a relative path like shown above, or specify an absolute path (e.g., `/tmp/azurite` on Linux/Mac or `c:/azurite` on Windows).
 
 #### Option 3: Using VS Code Extension
 
