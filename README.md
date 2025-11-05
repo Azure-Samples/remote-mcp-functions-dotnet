@@ -76,28 +76,7 @@ Choose your preferred development environment:
     func start
     ```
 
-#### Run and Debug from VS Code
-1. Open the repository in Visual Studio Code
-1. Press `F5` or go to **Run > Start Debugging**
-1. VS Code will build the project and start the Azure Functions host
-1. The MCP server will be available at `http://0.0.0.0:7071/runtime/webhooks/mcp/sse`
-
-### Option B: Using Visual Studio 
-
-1. Open `FunctionsMcpTool.sln` in Visual Studio 2022
-1. Ensure you have the **Azure development** workload installed
-1. Set `FunctionsMcpTool` as the startup project (right-click the project and select "Set as Startup Project")
-1. Press `F5` or click **Debug > Start Debugging**
-1. Visual Studio will build the project and launch the Azure Functions host
-1. The MCP server will be available at `http://localhost:7071/runtime/webhooks/mcp/sse`
-
-> **Key Differences:**
-> - **VS Code**: Uses external terminal and Azure Functions extension, URL uses `0.0.0.0`
-> - **Visual Studio**: Integrated debugging experience with F5, URL uses `localhost`
-> - Both approaches use the same underlying Azure Functions host (`func start`)
-> - Both provide full debugging capabilities with breakpoints
-
-Note by default this will use the webhooks route: `/runtime/webhooks/mcp/sse`.  Later we will use this in Azure to set the key on client/host calls: `/runtime/webhooks/mcp/sse?code=<system_key>`
+Note by default this will use the webhooks route: `/runtime/webhooks/mcp`.  Later we will use this in Azure to set the key on client/host calls: `/runtime/webhooks/mcp?code=<system_key>`
 
 ## Connect to your *local* MCP server from MCP client tools
 
@@ -105,9 +84,9 @@ Once your Azure Functions MCP server is running locally (via either Visual Studi
 
 ### Using VS Code with GitHub Copilot
 
-1. **Add MCP Server** from command palette and add URL to your running Function app's SSE endpoint:
+1. **Add MCP Server** from command palette and add URL to your running Function app's MCP endpoint:
     ```shell
-    http://0.0.0.0:7071/runtime/webhooks/mcp/sse
+    http://localhost:7071/runtime/webhooks/mcp
     ```
     > **Note**: If you're running from Visual Studio (not VS Code), use `http://localhost:7071/runtime/webhooks/mcp/sse` instead.
 
@@ -138,10 +117,10 @@ Once your Azure Functions MCP server is running locally (via either Visual Studi
     ```
 
 1. CTRL click to load the MCP Inspector web app from the URL displayed by the app (e.g. http://0.0.0.0:5173/#resources)
-1. Set the transport type to `SSE` 
-1. Set the URL to your running Function app's SSE endpoint and **Connect**:
+1. Set the transport type to `Streamable HTTP` 
+1. Set the URL to your running Function app's MCP endpoint and **Connect**:
     ```shell
-    http://0.0.0.0:7071/runtime/webhooks/mcp/sse
+    http://0.0.0.0:7071/runtime/webhooks/mcp
     ```
     > **Note**: If you're running from Visual Studio (not VS Code), use `http://localhost:7071/runtime/webhooks/mcp/sse` instead.
 
@@ -157,6 +136,34 @@ Once your Azure Functions MCP server is running locally (via either Visual Studi
 
 **Problem**: Visual Studio F5 doesn't work
 - **Solution**: Ensure Azure development workload is installed and `FunctionsMcpTool` is set as startup project  
+
+## Verify local blob storage in Azurite
+
+After testing the snippet save functionality locally, you can verify that blobs are being stored correctly in your local Azurite storage emulator.
+
+### Using Azure Storage Explorer
+
+1. Open Azure Storage Explorer
+1. In the left panel, expand **Emulator & Attached** → **Storage Accounts** → **(Emulator - Default Ports) (Key)**
+1. Navigate to **Blob Containers** → **snippets**
+1. You should see any saved snippets as blob files in this container
+1. Double-click on any blob to view its contents and verify the snippet data was saved correctly
+
+### Using Azure CLI (Alternative)
+
+If you prefer using the command line, you can also verify blobs using Azure CLI with the storage emulator:
+
+```shell
+# List blobs in the snippets container
+az storage blob list --container-name snippets --connection-string "DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;BlobEndpoint=http://127.0.0.1:10000/devstoreaccount1;"
+```
+
+```shell
+# Download a specific blob to view its contents
+az storage blob download --container-name snippets --name <blob-name> --file <local-file-path> --connection-string "DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;BlobEndpoint=http://127.0.0.1:10000/devstoreaccount1;"
+```
+
+This verification step ensures your MCP server is correctly interacting with the local storage emulator and that the blob storage functionality is working as expected before deploying to Azure.
 
 ## Deploy to Azure for Remote MCP
 
@@ -176,16 +183,16 @@ Additionally, [API Management]() can be used for improved security and policies 
 
 ## Connect to your *remote() MCP server function app from a client
 
-Your client will need a key in order to invoke the new hosted SSE endpoint, which will be of the form `https://<funcappname>.azurewebsites.net/runtime/webhooks/mcp/sse`. The hosted function requires a system key by default which can be obtained from the [portal](https://learn.microsoft.com/en-us/azure/azure-functions/function-keys-how-to?tabs=azure-portal) or the CLI (`az functionapp keys list --resource-group <resource_group> --name <function_app_name>`). Obtain the system key named `mcp_extension`.
+Your client will need a key in order to invoke the new hosted MCP endpoint, which will be of the form `https://<funcappname>.azurewebsites.net/runtime/webhooks/mcp`. The hosted function requires a system key by default which can be obtained from the [portal](https://learn.microsoft.com/en-us/azure/azure-functions/function-keys-how-to?tabs=azure-portal) or the CLI (`az functionapp keys list --resource-group <resource_group> --name <function_app_name>`). Obtain the system key named `mcp_extension`.
 
 ### Connect to remote MCP server in MCP Inspector
 For MCP Inspector, you can include the key in the URL: 
 ```plaintext
-https://<funcappname>.azurewebsites.net/runtime/webhooks/mcp/sse?code=<your-mcp-extension-system-key>
+https://<funcappname>.azurewebsites.net/runtime/webhooks/mcp?code=<your-mcp-extension-system-key>
 ```
 
 ### Connect to remote MCP server in VS Code - GitHub Copilot
-For GitHub Copilot within VS Code, you should instead set the key as the `x-functions-key` header in `mcp.json`, and you would just use `https://<funcappname>.azurewebsites.net/runtime/webhooks/mcp/sse` for the URL. The following example uses an input and will prompt you to provide the key when you start the server from VS Code.  Note [mcp.json]() has already been included in this repo and will be picked up by VS Code.  Click Start on the server to be prompted for values including `functionapp-name` (in your /.azure/*/.env file) and `functions-mcp-extension-system-key` which can be obtained from CLI command above or API Keys in the portal for the Function App.  
+For GitHub Copilot within VS Code, you should instead set the key as the `x-functions-key` header in `mcp.json`, and you would just use `https://<funcappname>.azurewebsites.net/runtime/webhooks/mcp` for the URL. The following example uses an input and will prompt you to provide the key when you start the server from VS Code.  Note [mcp.json]() has already been included in this repo and will be picked up by VS Code.  Click Start on the server to be prompted for values including `functionapp-name` (in your /.azure/*/.env file) and `functions-mcp-extension-system-key` which can be obtained from CLI command above or API Keys in the portal for the Function App.  
 
 ```json
 {
@@ -204,15 +211,15 @@ For GitHub Copilot within VS Code, you should instead set the key as the `x-func
     ],
     "servers": {
         "remote-mcp-function": {
-            "type": "sse",
-            "url": "https://${input:functionapp-name}.azurewebsites.net/runtime/webhooks/mcp/sse",
+            "type": "http",
+            "url": "https://${input:functionapp-name}.azurewebsites.net/runtime/webhooks/mcp",
             "headers": {
                 "x-functions-key": "${input:functions-mcp-extension-system-key}"
             }
         },
         "local-mcp-function": {
-            "type": "sse",
-            "url": "http://0.0.0.0:7071/runtime/webhooks/mcp/sse"
+            "type": "http",
+            "url": "http://0.0.0.0:7071/runtime/webhooks/mcp"
         }
     }
 }

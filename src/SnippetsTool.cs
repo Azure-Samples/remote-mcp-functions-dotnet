@@ -1,11 +1,10 @@
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Extensions.Mcp;
-using Microsoft.Extensions.Logging;
 using static FunctionsSnippetTool.ToolsInformation;
 
 namespace FunctionsSnippetTool;
 
-public class SnippetsTool(ILogger<SnippetsTool> logger)
+public class SnippetsTool()
 {
     private const string BlobPath = "snippets/{mcptoolargs." + SnippetNamePropertyName + "}.json";
 
@@ -24,9 +23,9 @@ public class SnippetsTool(ILogger<SnippetsTool> logger)
     public string SaveSnippet(
         [McpToolTrigger(SaveSnippetToolName, SaveSnippetToolDescription)]
             ToolInvocationContext context,
-        [McpToolProperty(SnippetNamePropertyName, PropertyType, SnippetNamePropertyDescription)]
+        [McpToolProperty(SnippetNamePropertyName, SnippetNamePropertyDescription, true)]
             string name,
-        [McpToolProperty(SnippetPropertyName, PropertyType, SnippetPropertyDescription)]
+        [McpToolProperty(SnippetPropertyName, SnippetPropertyDescription, true)]
             string snippet
     )
     {

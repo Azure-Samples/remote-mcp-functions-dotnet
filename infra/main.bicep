@@ -147,6 +147,7 @@ module storage 'br/public:avm/res/storage/storage-account:0.8.3' = {
     minimumTlsVersion: 'TLS1_2'  // Enforcing TLS 1.2 for better security
     location: location
     tags: tags
+    skuName: 'Standard_LRS'  // Standard performance with locally redundant storage
   }
 }
 

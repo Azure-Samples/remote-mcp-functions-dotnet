@@ -11,7 +11,8 @@
           "ms-azuretools.vscode-docker",
           "ms-azuretools.vscode-azurefunctions",
           "GitHub.copilot",
-          "humao.rest-client"
+          "humao.rest-client",
+          "ms-dotnettools.csdevkit"
         ]
       }
     },
