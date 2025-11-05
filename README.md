@@ -30,15 +30,20 @@ If you're looking for this sample in more languages check out the [Node.js/TypeS
 
 ## Prerequisites
 
+### Required for all development approaches:
 + [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0)
 + [Azure Functions Core Tools](https://learn.microsoft.com/azure/azure-functions/functions-run-local?pivots=programming-language-csharp#install-the-azure-functions-core-tools) >= `4.0.7030`
-+ [Azure Developer CLI](https://aka.ms/azd)
-+ To use Visual Studio to run and debug locally:
-  + [Visual Studio 2022](https://visualstudio.microsoft.com/vs/).
-  + Make sure to select the **Azure development** workload during installation.
-+ To use Visual Studio Code to run and debug locally:
-  + [Visual Studio Code](https://code.visualstudio.com/)
-  + [Azure Functions extension](https://marketplace.visualstudio.com/items?itemName=ms-azuretools.vscode-azurefunctions)
++ [Azure Developer CLI](https://aka.ms/azd) (for deployment)
+
+### For Visual Studio development:
++ [Visual Studio 2022](https://visualstudio.microsoft.com/vs/)
++ Make sure to select the **Azure development** workload during installation
+
+### For Visual Studio Code development:
++ [Visual Studio Code](https://code.visualstudio.com/)
++ [Azure Functions extension](https://marketplace.visualstudio.com/items?itemName=ms-azuretools.vscode-azurefunctions)
+
+> **Choose one**: You can use either Visual Studio OR Visual Studio Code. Both provide full debugging support, but the setup steps differ slightly.
 
 Below is the architecture diagram for the Remote MCP Server using Azure Functions:
 
@@ -57,8 +62,13 @@ An Azure Storage Emulator is needed for this particular sample because we will s
 
 >**Note** if you use Azurite coming from VS Code extension you need to run `Azurite: Start` now or you will see errors.
 
-## Run your MCP Server locally from the terminal
+## Run your MCP Server locally
 
+Choose your preferred development environment:
+
+### Option A: Using Visual Studio Code
+
+#### Run from Terminal
 1. From the `src` folder, run this command to start the Functions host locally:
 
     ```shell
@@ -68,14 +78,18 @@ An Azure Storage Emulator is needed for this particular sample because we will s
 
 Note by default this will use the webhooks route: `/runtime/webhooks/mcp`.  Later we will use this in Azure to set the key on client/host calls: `/runtime/webhooks/mcp?code=<system_key>`
 
-## Connect to the *local* MCP server from within a client/host
+## Connect to your *local* MCP server from MCP client tools
 
-### VS Code - Copilot Edits
+Once your Azure Functions MCP server is running locally (via either Visual Studio Code or Visual Studio), you can connect to it from various MCP client tools:
+
+### Using VS Code with GitHub Copilot
 
 1. **Add MCP Server** from command palette and add URL to your running Function app's MCP endpoint:
     ```shell
     http://localhost:7071/runtime/webhooks/mcp
     ```
+    > **Note**: If you're running from Visual Studio (not VS Code), use `http://localhost:7071/runtime/webhooks/mcp/sse` instead.
+
 1. **List MCP Servers** from command palette and start the server
 1. In Copilot chat agent mode enter a prompt to trigger the tool, e.g., select some code and enter this prompt
 
@@ -92,9 +106,9 @@ Note by default this will use the webhooks route: `/runtime/webhooks/mcp`.  Late
     ```
 1. When prompted to run the tool, consent by clicking **Continue**
 
-1. When you're done, press Ctrl+C in the terminal window to stop the `func.exe` host process.
+1. When you're done, press Ctrl+C in the terminal window to stop the `func.exe` host process (or stop debugging in your IDE).
 
-### MCP Inspector
+### Using MCP Inspector
 
 1. In a **new terminal window**, install and run MCP Inspector
 
@@ -108,7 +122,20 @@ Note by default this will use the webhooks route: `/runtime/webhooks/mcp`.  Late
     ```shell
     http://0.0.0.0:7071/runtime/webhooks/mcp
     ```
-1. **List Tools**.  Click on a tool and **Run Tool**.  
+    > **Note**: If you're running from Visual Studio (not VS Code), use `http://localhost:7071/runtime/webhooks/mcp/sse` instead.
+
+1. **List Tools**.  Click on a tool and **Run Tool**.
+
+### Troubleshooting Local Development
+
+**Problem**: Connection refused when trying to connect to MCP server
+- **Solution**: Ensure Azurite is running (`docker run -p 10000:10000 -p 10001:10001 -p 10002:10002 mcr.microsoft.com/azure-storage/azurite`)
+
+**Problem**: Wrong URL (0.0.0.0 vs localhost)
+- **Solution**: Use `http://0.0.0.0:7071/runtime/webhooks/mcp/sse` for VS Code, `http://localhost:7071/runtime/webhooks/mcp/sse` for Visual Studio
+
+**Problem**: Visual Studio F5 doesn't work
+- **Solution**: Ensure Azure development workload is installed and `FunctionsMcpTool` is set as startup project  
 
 ## Verify local blob storage in Azurite
 
