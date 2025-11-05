@@ -43,6 +43,12 @@ If you're looking for this sample in more languages check out the [Node.js/TypeS
 + [Visual Studio Code](https://code.visualstudio.com/)
 + [Azure Functions extension](https://marketplace.visualstudio.com/items?itemName=ms-azuretools.vscode-azurefunctions)
 
+### For running Azure Storage Emulator (Azurite):
+**Choose one of the following options:**
++ [Docker](https://docs.docker.com/get-docker/) (recommended for simplicity)
++ [Node.js](https://nodejs.org/) (if you prefer to run Azurite via npx)
++ VS Code Azurite extension (if using Visual Studio Code)
+
 > **Choose one**: You can use either Visual Studio OR Visual Studio Code. Both provide full debugging support, but the setup steps differ slightly.
 
 Below is the architecture diagram for the Remote MCP Server using Azure Functions:
@@ -53,14 +59,28 @@ Below is the architecture diagram for the Remote MCP Server using Azure Function
 
 An Azure Storage Emulator is needed for this particular sample because we will save and get snippets from blob storage. 
 
-1. Start Azurite
+### Start Azurite
 
-    ```shell
-    docker run -p 10000:10000 -p 10001:10001 -p 10002:10002 \
-        mcr.microsoft.com/azure-storage/azurite
-    ```
+Choose one of the following options to start Azurite:
 
->**Note** if you use Azurite coming from VS Code extension you need to run `Azurite: Start` now or you will see errors.
+#### Option 1: Using Docker
+
+```shell
+docker run -p 10000:10000 -p 10001:10001 -p 10002:10002 \
+    mcr.microsoft.com/azure-storage/azurite
+```
+
+#### Option 2: Using npx (Node.js)
+
+```shell
+npx azurite --silent --location azurite --debug azurite/debug.log
+```
+
+> **Note**: The `--location` parameter specifies where Azurite stores data. You can change `azurite` to any directory you prefer (e.g., `c:\azurite` on Windows).
+
+#### Option 3: Using VS Code Extension
+
+If you use the Azurite extension in VS Code, run the **Azurite: Start** command from the command palette now or you will see errors.
 
 ## Run your MCP Server locally
 
@@ -129,7 +149,10 @@ Once your Azure Functions MCP server is running locally (via either Visual Studi
 ### Troubleshooting Local Development
 
 **Problem**: Connection refused when trying to connect to MCP server
-- **Solution**: Ensure Azurite is running (`docker run -p 10000:10000 -p 10001:10001 -p 10002:10002 mcr.microsoft.com/azure-storage/azurite`)
+- **Solution**: Ensure Azurite is running. Choose one of the following methods:
+  - Docker: `docker run -p 10000:10000 -p 10001:10001 -p 10002:10002 mcr.microsoft.com/azure-storage/azurite`
+  - npx: `npx azurite --silent --location azurite --debug azurite/debug.log`
+  - VS Code: Run **Azurite: Start** from the command palette
 
 **Problem**: Wrong URL (0.0.0.0 vs localhost)
 - **Solution**: Use `http://0.0.0.0:7071/runtime/webhooks/mcp/sse` for VS Code, `http://localhost:7071/runtime/webhooks/mcp/sse` for Visual Studio
