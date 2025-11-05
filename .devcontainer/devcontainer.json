@@ -13,7 +13,7 @@
 			"onAutoForward": "notify"
 		}
 	},
-	"postCreateCommand": "bash -c 'echo \"export PROMPT_DIRTRIM=1\" >> ~/.bashrc || true; mkdir -p ~/.azurite || true; cat .devcontainer/first-run-notice.txt || echo \"Setup completed\"'; npx azurite --location ~/.azurite --silent --loose &",
+	"postCreateCommand": "bash -c 'echo \"export PROMPT_DIRTRIM=1\" >> ~/.bashrc || true; mkdir -p ~/.azurite || true; cat .devcontainer/first-run-notice.txt || echo \"Setup completed\"'",
 	"customizations": {
 		"vscode": {
 			"extensions": [
