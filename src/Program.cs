@@ -1,3 +1,4 @@
+using FunctionsSnippetTool.McpOutboundCredential;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Builder;
 using Microsoft.Extensions.DependencyInjection;
@@ -11,6 +12,12 @@ builder.ConfigureFunctionsWebApplication();
 builder.Services
     .AddApplicationInsightsTelemetryWorkerService()
     .ConfigureFunctionsApplicationInsights();
+
+// Register scoped service for outbound credential
+builder.Services.AddScoped<IMcpOutboundCredentialProvider, McpOutboundCredentialProvider>();
+
+// Register middleware for MCP tool triggers
+builder.UseWhen<McpOutboundCredentialMiddleware>((context) => context.FunctionDefinition.InputBindings.Values.First(a => a.Type.EndsWith("Trigger")).Type == "mcpToolTrigger");
 
 // Demonstrate how you can define tool properties without requiring
 // input bindings:

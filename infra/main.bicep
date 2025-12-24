@@ -5,6 +5,21 @@ targetScope = 'subscription'
 @description('Name of the the environment which is used to generate a short unique hash used in all resources.')
 param environmentName string
 
+@description('References application or service contact information from a Service or Asset Management database')
+param serviceManagementReference string = ''
+
+@description('Comma-separated list of client application IDs to pre-authorize for accessing the MCP API (optional)')
+param preAuthorizedClientIds string = ''
+
+@description('OAuth2 delegated permissions for App Service Authentication login flow')
+param delegatedPermissions array = ['User.Read']
+
+@description('Token exchange audience for sovereign cloud deployments (optional)')
+param tokenExchangeAudience string = ''
+
+@description('If set to true, skip configuring built-in auth for MCP server')
+param skipBuiltInMcpAuth string = '' 
+
 @minLength(1)
 @description('Primary location for all resources & Flex Consumption Function App')
 @allowed([
@@ -64,6 +79,10 @@ var resourceToken = toLower(uniqueString(subscription().id, environmentName, loc
 var tags = { 'azd-env-name': environmentName }
 var functionAppName = !empty(apiServiceName) ? apiServiceName : '${abbrs.webSitesFunctions}api-${resourceToken}'
 var deploymentStorageContainerName = 'app-package-${take(functionAppName, 32)}-${take(toLower(uniqueString(functionAppName, resourceToken)), 7)}'
+var useBuiltInMcpAuth = toLower(skipBuiltInMcpAuth) != 'true'
+
+// Convert comma-separated string to array for pre-authorized client IDs
+var preAuthorizedClientIdsArray = !empty(preAuthorizedClientIds) ? map(split(preAuthorizedClientIds, ','), clientId => trim(clientId)) : []
 
 // Organize resources in a resource group
 resource rg 'Microsoft.Resources/resourceGroups@2021-04-01' = {
@@ -100,6 +119,23 @@ module appServicePlan 'br/public:avm/res/web/serverfarm:0.1.1' = {
   }
 }
 
+// Entra ID application registration for MCP authentication (with predictable hostname)
+module entraApp 'app/entra.bicep' = if (useBuiltInMcpAuth) {
+  name: 'entraApp'
+  scope: rg
+  params: {
+    appUniqueName: '${functionAppName}-app'
+    appDisplayName: 'MCP Authorization App'
+    serviceManagementReference: serviceManagementReference
+    functionAppHostname: '${functionAppName}.azurewebsites.net'
+    preAuthorizedClientIds: preAuthorizedClientIdsArray
+    managedIdentityClientId: apiUserAssignedIdentity.outputs.clientId
+    managedIdentityPrincipalId: apiUserAssignedIdentity.outputs.principalId
+    tags: tags
+  }
+}
+
+
 module api './app/api.bicep' = {
   name: 'api'
   scope: rg
@@ -121,6 +157,14 @@ module api './app/api.bicep' = {
     appSettings: {
     }
     virtualNetworkSubnetId: vnetEnabled ? serviceVirtualNetwork.outputs.appSubnetID : ''
+    // Authorization parameters (only when built-in MCP auth is enabled)
+    authClientId: useBuiltInMcpAuth ? entraApp.outputs.applicationId : ''
+    authIdentifierUri: useBuiltInMcpAuth ? entraApp.outputs.identifierUri : ''
+    authExposedScopes: useBuiltInMcpAuth ? entraApp.outputs.exposedScopes : []
+    authTenantId: useBuiltInMcpAuth ? tenant().tenantId : ''
+    delegatedPermissions: delegatedPermissions
+    tokenExchangeAudience: tokenExchangeAudience
+    preAuthorizedClientIds: preAuthorizedClientIdsArray
   }
 }
 
@@ -232,3 +276,20 @@ output AZURE_LOCATION string = location
 output AZURE_TENANT_ID string = tenant().tenantId
 output SERVICE_API_NAME string = api.outputs.SERVICE_API_NAME
 output AZURE_FUNCTION_NAME string = api.outputs.SERVICE_API_NAME
+
+// Entra App outputs (using the initial app for core properties)
+output ENTRA_APPLICATION_ID string = useBuiltInMcpAuth ? entraApp.outputs.applicationId : ''
+output ENTRA_APPLICATION_OBJECT_ID string = useBuiltInMcpAuth ? entraApp.outputs.applicationObjectId : ''
+output ENTRA_SERVICE_PRINCIPAL_ID string = useBuiltInMcpAuth ? entraApp.outputs.servicePrincipalId : ''
+output ENTRA_IDENTIFIER_URI string = useBuiltInMcpAuth ? entraApp.outputs.identifierUri : ''
+
+// Authorization outputs
+output AUTH_ENABLED bool = api.outputs.AUTH_ENABLED
+output CONFIGURED_SCOPES string = api.outputs.CONFIGURED_SCOPES
+
+// Pre-authorized applications
+output PRE_AUTHORIZED_CLIENT_IDS string = preAuthorizedClientIds
+
+// Entra App redirect URI outputs (using predictable hostname, only when Entra ID auth is enabled)
+output CONFIGURED_REDIRECT_URIS array = useBuiltInMcpAuth ? entraApp.outputs.configuredRedirectUris : []
+output AUTH_REDIRECT_URI string = useBuiltInMcpAuth ? entraApp.outputs.authRedirectUri : ''
