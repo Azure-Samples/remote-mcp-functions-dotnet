@@ -3,7 +3,7 @@
     "extensions": {
         "mcp": {
             "system": {
-                "webhookAuthorizationLevel": "Anonymous"
+                "webhookAuthorizationLevel": "System"
             }
         }    
     },

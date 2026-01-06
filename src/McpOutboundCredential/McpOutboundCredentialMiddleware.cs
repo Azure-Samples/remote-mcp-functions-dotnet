@@ -42,7 +42,9 @@ internal class McpOutboundCredentialMiddleware(IHostEnvironment hostEnvironment)
             }
             else
             {
-                throw new InvalidOperationException($"Transport using App Service Authentication and Authorization not available.");
+                // throw new InvalidOperationException($"Transport using App Service Authentication and Authorization not available.");
+                // When built-in auth is disabled, use Managed Identity
+                credentialProvider!.SetTokenCredential(new ManagedIdentityCredential());
             }
         }
         else

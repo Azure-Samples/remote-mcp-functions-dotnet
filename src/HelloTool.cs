@@ -25,7 +25,7 @@ public class HelloTool(ILogger<HelloTool> logger, IMcpOutboundCredentialProvider
         try
         {
             var me = await graphClient.Me.GetAsync();
-            return $"Hello, {me!.DisplayName} ({me?.Mail})!";
+            return $"Hello, {me!.DisplayName} ({me?.UserPrincipalName})!";
         }
         catch (Exception ex)
         {
