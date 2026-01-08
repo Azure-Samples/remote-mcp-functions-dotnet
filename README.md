@@ -35,7 +35,7 @@ If you're looking for this sample in more languages check out the [Node.js/TypeS
 ## Prerequisites
 
 ### Required for all development approaches:
-+ [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0)
++ [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0)
 + [Azure Functions Core Tools](https://learn.microsoft.com/azure/azure-functions/functions-run-local?pivots=programming-language-csharp#install-the-azure-functions-core-tools) >= `4.0.7030`
 + [Azure Developer CLI](https://aka.ms/azd) (for deployment)
 
@@ -116,7 +116,7 @@ Once your Azure Functions MCP server is running locally (via either Visual Studi
     npx @modelcontextprotocol/inspector
     ```
 
-1. CTRL click to load the MCP Inspector web app from the URL displayed by the app (e.g. http://0.0.0.0:5173>/#resources)
+1. CTRL click to load the MCP Inspector web app from the URL displayed by the app (e.g. http://0.0.0.0:5173/#resources)
 1. Set the transport type to `Streamable HTTP` 
 1. Set the URL to your running Function app's MCP endpoint and **Connect**:
     ```shell
@@ -171,6 +171,8 @@ This verification step ensures your MCP server is correctly interacting with the
 ## Deploy to Azure for Remote MCP
 Stop the local server with `Cntrl+C`. 
 
+Switch back to the root directory `remote-mcp-functions-dotnet`. 
+
 Sign in to Azure and initialize [azd](https://aka.ms/azd):
 
 ```shell
@@ -184,7 +186,7 @@ Create a new azd project environment:
 azd env new <environment-name>
 ```
 
-Configure Visual Studio Code as an allowed client application so it can request access tokens from Microsoft Entra:
+We'll test the remote server with Visual Studio Code, so configure it as an allowed client application to request access tokens from Microsoft Entra:
 
 ```shell
 azd env set PRE_AUTHORIZED_CLIENT_IDS aebc6443-996d-45c2-90f0-388ff96faa56
@@ -204,7 +206,7 @@ azd env set VNET_ENABLED true
 
 ### Connect to remote MCP server in VS Code - GitHub Copilot
 
-Connect to the remote MCP server after development finishes. For GitHub Copilot within VS Code, use `https://<funcappname>.azurewebsites.net/runtime/webhooks/mcp` for the URL. Note [mcp.json](.vscode/mcp.json) has already been included in this repo and will be picked up by VS Code, so just click **Start** above _remote-mcp-function_ to be prompted for `functionapp-name` (in your azd command output or /.azure/*/.env file). When connecting to the server, you'll be prompted to authenticate with Microsoft. Click **Allow** and login with your Azure subscription email. 
+Connect to the remote MCP server after deployment finishes. For GitHub Copilot within VS Code, use `https://<funcappname>.azurewebsites.net/runtime/webhooks/mcp` for the URL. Note a [mcp.json](.vscode/mcp.json) is already included in this repo and will be picked up by VS Code, so just click **Start** above _remote-mcp-function_ to be prompted for `functionapp-name` (in your azd command output or /.azure/*/.env file). You'll also be prompted to authenticate with Microsoft. Click **Allow** and login with your Azure subscription email. 
 
 >[!TIP]
 >Successful connect shows the number of tools the server has. You can see more details on the interactions between VS Code and server by clicking on **More... -> Show Output** above the server name. 
@@ -277,7 +279,7 @@ public string SayHello(
 )
 {
     logger.LogInformation("C# MCP tool trigger function processed a request.");
-    return "Hello from your MCP server!";
+    return "Hello I am MCP Tool!";
 }
 ```
 

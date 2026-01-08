@@ -20,7 +20,7 @@
                         <mxPoint as="offset"/>
                     </mxGeometry>
                 </mxCell>
-                <mxCell id="11" value="Azure Function App (.NET 8 Isolated)" style="swimlane;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;startSize=30;fontSize=14;fontStyle=1;swimlaneFillColor=#f5f5f5;" parent="1" vertex="1">
+                <mxCell id="11" value="Azure Function App (.NET 10 Isolated)" style="swimlane;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;startSize=30;fontSize=14;fontStyle=1;swimlaneFillColor=#f5f5f5;" parent="1" vertex="1">
                     <mxGeometry x="360" y="110" width="470" height="340" as="geometry"/>
                 </mxCell>
                 <mxCell id="12" value="MCP Tools" style="swimlane;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;startSize=30;" parent="11" vertex="1">

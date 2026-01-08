@@ -13,6 +13,6 @@ public class HelloTool(ILogger<HelloTool> logger)
     )
     {
         logger.LogInformation("C# MCP tool trigger function processed a request.");
-        return "Hello from your MCP server!";
+        return "Hello I am MCP Tool!";
     }
 }
