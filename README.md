@@ -18,7 +18,7 @@ urlFragment: remote-mcp-functions-dotnet
 
 This is a quickstart template to easily build and deploy a custom remote MCP server to the cloud using Azure functions. You can clone/restore/run on your local machine with debugging, and `azd up` to have it in the cloud in a couple minutes. 
 
-The MCP server is configured with [built-in authentication](https://learn.microsoft.com/en-us/azure/app-service/overview-authentication-authorization) using Microsoft Entra as the identity provider. The server also demonstrates how call a downstream service on behalf of the signed-in user in one of the tools. 
+The MCP server is configured with [built-in authentication](https://learn.microsoft.com/en-us/azure/app-service/overview-authentication-authorization) using Microsoft Entra as the identity provider. 
 
 You can also use [API Management](https://learn.microsoft.com/azure/api-management/secure-mcp-servers) to secure the server, as well as network isolation using VNET.  
 
@@ -55,35 +55,14 @@ Below is the architecture diagram for the Remote MCP Server using Azure Function
 
 ## Prepare your local environment
 
-1. An Azure Storage Emulator is needed for this particular sample because we will save and get snippets from blob storage. Start Azurite emulator: 
+An Azure Storage Emulator is needed for this particular sample because we will save and get snippets from blob storage. Start Azurite emulator: 
 
-    ```shell
-    docker run -p 10000:10000 -p 10001:10001 -p 10002:10002 \
-        mcr.microsoft.com/azure-storage/azurite
-    ```
+```shell
+docker run -p 10000:10000 -p 10001:10001 -p 10002:10002 \
+    mcr.microsoft.com/azure-storage/azurite
+```
 
 >**Note** if you use Azurite coming from VS Code extension you need to run `Azurite: Start` now or you will see errors.
-
-1. (Optional) Update the `local.settings.json` file in the `src` folder to include your Microsoft Entra tenant ID. This helps the application correctly access your developer identity (required by one of the tools), even when you sign into multiple tenants.
-
-    1. Obtain the tenant ID from the Azure CLI:
-
-        ```cli
-        az account show --query tenantId -o tsv
-        ```
-
-    1. Update `local.settings.json` to include the tenant ID:
-
-        ```json
-        {
-          "IsEncrypted": false,
-          "Values": {
-            "AzureWebJobsStorage": "UseDevelopmentStorage=true",
-            "FUNCTIONS_WORKER_RUNTIME": "dotnet-isolated",
-            "AZURE_TENANT_ID": "<your-tenant-id>"
-          }
-        }
-        ```
 
 ## Run your MCP Server locally
 
@@ -114,6 +93,10 @@ Once your Azure Functions MCP server is running locally (via either Visual Studi
 1. In Copilot chat **agent** mode enter a prompt to trigger the tool, e.g., select some code and enter this prompt
 
     ```plaintext
+    Say Hello 
+    ```
+
+    ```plaintext
     Save this snippet as snippet1 
     ```
 
@@ -122,12 +105,6 @@ Once your Azure Functions MCP server is running locally (via either Visual Studi
     ```
 
 1. When prompted to run the tool, consent by clicking **Continue**
-
-1. The *hello_tool* demonstrates how to call Microsoft Graph on behalf of the signed-in user. When running locally, the MCP server will use your developer credentials (from Azure CLI or Visual Studio Code) for outbound calls to Microsoft Graph instead of an authorized user's identity. Invoke it via this prompt: 
-
-    ```plaintext
-    Greet with #hello_tool
-    ```
     
 1. When you're done, press Ctrl+C in the terminal window to stop the `func.exe` host process (or stop debugging in your IDE).
 
@@ -136,7 +113,7 @@ Once your Azure Functions MCP server is running locally (via either Visual Studi
 1. In a **new terminal window**, install and run MCP Inspector
 
     ```shell
-    npx @modelcontextprotocol/inspector node build/index.js
+    npx @modelcontextprotocol/inspector
     ```
 
 1. CTRL click to load the MCP Inspector web app from the URL displayed by the app (e.g. http://0.0.0.0:5173>/#resources)
@@ -155,7 +132,7 @@ Once your Azure Functions MCP server is running locally (via either Visual Studi
 - **Solution**: Ensure Azurite is running (`docker run -p 10000:10000 -p 10001:10001 -p 10002:10002 mcr.microsoft.com/azure-storage/azurite`)
 
 **Problem**: Wrong URL (0.0.0.0 vs localhost)
-- **Solution**: Use `http://localhost:7071/runtime/webhooks/mcp` for VS Code, `http://localhost:7071/runtime/webhooks/mcp/sse` for Visual Studio, and `http://0.0.0.0:7071/runtime/webhooks/mcp` for MCP Inspector
+- **Solution**: Use `http://0.0.0.0:7071/runtime/webhooks/mcp` for VS Code, `http://localhost:7071/runtime/webhooks/mcp/sse` for Visual Studio
 
 **Problem**: Visual Studio F5 doesn't work
 - **Solution**: Ensure Azure development workload is installed and `FunctionsMcpTool` is set as startup project  
@@ -227,7 +204,7 @@ azd env set VNET_ENABLED true
 
 ### Connect to remote MCP server in VS Code - GitHub Copilot
 
-Connect to the remote MCP server after development finishes. For GitHub Copilot within VS Code, use `https://<funcappname>.azurewebsites.net/runtime/webhooks/mcp` for the URL. Note [mcp.json](.vscode/mcp.json) has already been included in this repo and will be picked up by VS Code, so just click **Start** above _remote-mcp-function_ to be prompted for `functionapp-name` (in your azd command output or /.azure/*/.env file). 
+Connect to the remote MCP server after development finishes. For GitHub Copilot within VS Code, use `https://<funcappname>.azurewebsites.net/runtime/webhooks/mcp` for the URL. Note [mcp.json](.vscode/mcp.json) has already been included in this repo and will be picked up by VS Code, so just click **Start** above _remote-mcp-function_ to be prompted for `functionapp-name` (in your azd command output or /.azure/*/.env file). When connecting to the server, you'll be prompted to authenticate with Microsoft. Click **Allow** and login with your Azure subscription email. 
 
 >[!TIP]
 >Successful connect shows the number of tools the server has. You can see more details on the interactions between VS Code and server by clicking on **More... -> Show Output** above the server name. 
@@ -248,42 +225,11 @@ Connect to the remote MCP server after development finishes. For GitHub Copilot 
         },
         "local-mcp-function": {
             "type": "http",
-            "url": "http://0.0.0.0:7071/runtime/webhooks/mcp"
+            "url": "http://localhost:7071/runtime/webhooks/mcp"
         }
     }
 }
 ```
-
-### Test remote MCP server 
-
-You can test the save and get snippet tools as before during local development. Testing the *hello_tool* is a little different when the server is running remotely. Because the tool requires accessing the Microsoft Graph API, you need to provide consent for such access. When you invoke the tool for the first time, GitHub Copilot should return an error with instructions on how to provide the consent. Specifically, it should tell you to navigate to the `/.auth/login/aad` endpoint of your deployed function app. For example, if your function app is at `https://my-mcp-function-app.azurewebsites.net`, navigate to `https://my-mcp-function-app.azurewebsites.net/.auth/login/aad`. Try the tool again after consenting.
-
-## Connect to your *remote* MCP server function app in other clients
-
-Other clients like MCP Inspector are not yet recognized by Entra. This means you can't connect to the MCP server in these clients when built-in auth is configured. You can, however, connect with the system key. To do that:
-
-1. Change the `webhookAuthorizationLevel` in [host.json](./src/host.json) from `Anonymous` to `System`, which makes accessing the webhook endpoint require a key. Previously with built-in auth configured, we didn't need a key because Entra helps authenticate the user. 
-
-1. Disable built-in auth on the server app:
-    ```shell
-    az config set extension.dynamic_install_allow_preview=true && az webapp auth update --resource-group <resource_group> --name <function_app_name> --enabled false
-    ```
-
-1. Configure the deployment to skip built-in auth configuration:
-    ```shell
-    azd env set SKIP_BUILTIN_MCP_AUTH true
-    ```
-
-1. Redeploy the server with `azd up`. 
-
-1. Connect to the MCP server by including the key in the URL: 
-    ```plaintext
-    https://<funcappname>.azurewebsites.net/runtime/webhooks/mcp?code=<your-mcp-extension-system-key>
-    ```
-
-The key can be obtained from the [portal](https://learn.microsoft.com/en-us/azure/azure-functions/function-keys-how-to?tabs=azure-portal). Go to the Function App resource, on the left menu look for **Functions -> App keys**. Obtain the system key named `mcp_extension`. 
-
-Or use the CLI (`az rest --method post --uri "/subscriptions/$(az account show --query id -o tsv)/resourceGroups/<resource_group>/providers/Microsoft.Web/sites/<function_app_name>/host/default/listkeys?api-version=2022-03-01" --query "systemKeys.mcp_extension" -o tsv`). 
 
 ## Redeploy your code
 
@@ -304,7 +250,7 @@ azd down
 
 The function code for the `GetSnippet` and `SaveSnippet` endpoints are defined in [`SnippetsTool.cs`](./src/SnippetsTool.cs). The `McpToolsTrigger` attribute applied to the async `Run` method exposes the code function as an MCP Server.
 
-The following shows the code for a few MCP server examples (get string, get object, save object). The *SayHello* tool [exchanges](./src/McpOutboundCredential/AppServiceAuthenticationOnBehalfOfCredential.cs) the berear token from server authentication with one that can access Microsoft Graph. See [McpOutboundCredential](./src/McpOutboundCredential/).
+The following shows the code for a few MCP server examples (get string, get object, save object):
 
 ```csharp
 [Function(nameof(GetSnippet))]
@@ -326,25 +272,12 @@ public string SaveSnippet(
 }
 
 [Function(nameof(SayHello))]
-public async Task<string> SayHello(
+public string SayHello(
     [McpToolTrigger(HelloToolName, HelloToolDescription)] ToolInvocationContext context
 )
 {
     logger.LogInformation("C# MCP tool trigger function processed a request.");
-
-    var token = credentialProvider.GetTokenCredential().GetToken(new Azure.Core.TokenRequestContext(graphDefaultScopes), CancellationToken.None);
-
-    using var graphClient = new GraphServiceClient(credentialProvider.GetTokenCredential(), graphDefaultScopes);
-
-    try
-    {
-        var me = await graphClient.Me.GetAsync();
-        return $"Hello, {me!.DisplayName} ({me?.UserPrincipalName})!";
-    }
-    catch (Exception ex)
-    {
-        // Code that handles exception
-    }
+    return "Hello from your MCP server!";
 }
 ```
 
