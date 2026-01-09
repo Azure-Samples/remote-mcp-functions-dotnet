@@ -71,7 +71,7 @@
 			"type": "func",
 			"dependsOn": "build (functions)",
 			"options": {
-				"cwd": "${workspaceFolder}/src/bin/Debug/net8.0"
+				"cwd": "${workspaceFolder}/src/bin/Debug/net10.0"
 			},
 			"command": "host start",
 			"isBackground": true,
