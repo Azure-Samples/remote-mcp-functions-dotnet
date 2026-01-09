@@ -133,7 +133,7 @@ module api './app/api.bicep' = {
     preAuthorizedClientIds: preAuthorizedClientIdsArray
     appSettings: {
     }
-    virtualNetworkSubnetId: vnetEnabled ? serviceVirtualNetwork.outputs.appSubnetID : ''
+    virtualNetworkSubnetResourceId: vnetEnabled ? serviceVirtualNetwork.outputs.appSubnetID : ''
         // Authorization parameters
     authClientId: entraApp.outputs.applicationId
     authIdentifierUri: entraApp.outputs.identifierUri

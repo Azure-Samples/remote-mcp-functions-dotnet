@@ -16,6 +16,6 @@ builder.Services
 // input bindings:
 builder
     .ConfigureMcpTool(GetSnippetToolName)
-    .WithProperty(SnippetNamePropertyName, PropertyType, SnippetNamePropertyDescription, required: true);
+    .WithProperty(SnippetNamePropertyName, McpToolPropertyType.String, SnippetNamePropertyDescription, required: true);
 
 builder.Build().Run();

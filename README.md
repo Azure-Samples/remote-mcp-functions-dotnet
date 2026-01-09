@@ -204,7 +204,7 @@ You can opt-in to a VNet being used in the sample. To do so, do this before `azd
 azd env set VNET_ENABLED true
 ```
 
-### Connect to remote MCP server in VS Code - GitHub Copilot
+### Connect to remote MCP server in Visual Studio Code - GitHub Copilot
 
 Connect to the remote MCP server after deployment finishes. For GitHub Copilot within VS Code, use `https://<funcappname>.azurewebsites.net/runtime/webhooks/mcp` for the URL. Note a [mcp.json](.vscode/mcp.json) is already included in this repo and will be picked up by VS Code, so just click **Start** above _remote-mcp-function_ to be prompted for `functionapp-name` (in your azd command output or /.azure/*/.env file). You'll also be prompted to authenticate with Microsoft. Click **Allow** and login with your Azure subscription email. 
 
@@ -286,6 +286,5 @@ public string SayHello(
 ## Next Steps
 
 - Add [API Management](https://github.com/Azure-Samples/remote-mcp-apim-functions-python) to your MCP server
-- Add [built-in auth](https://learn.microsoft.com/en-us/azure/app-service/overview-authentication-authorization) to your MCP server
 - Enable VNET using VNET_ENABLED=true flag
 - Learn more about [related MCP efforts from Microsoft](https://github.com/microsoft/mcp/tree/main/Resources)

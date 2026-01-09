@@ -10,7 +10,7 @@ param runtimeVersion string
 param serviceName string = 'api'
 param storageAccountName string
 param deploymentStorageContainerName string
-param virtualNetworkSubnetId string = ''
+param virtualNetworkSubnetResourceId string = ''
 param instanceMemoryMB int = 2048
 param maximumInstanceCount int = 100
 param identityId string = ''
@@ -89,7 +89,7 @@ resource applicationInsights 'Microsoft.Insights/components@2020-02-02' existing
 }
 
 // Create a Flex Consumption Function App to host the API
-module api 'br/public:avm/res/web/site:0.15.1' = {
+module api 'br/public:avm/res/web/site:0.21.0' = {
   name: '${serviceName}-flex-consumption'
   params: {
     kind: kind
@@ -103,6 +103,87 @@ module api 'br/public:avm/res/web/site:0.15.1' = {
         '${identityId}'
       ]
     }
+    configs: !empty(authClientId) && !empty(authTenantId) ? [
+      {
+        name: 'appsettings'
+        properties: allAppSettings
+      }
+      {
+        name: 'authsettingsV2'
+        properties: {
+          globalValidation: {
+            requireAuthentication: true
+            unauthenticatedClientAction: 'Return401'
+            redirectToProvider: 'azureactivedirectory'
+          }
+          httpSettings: {
+            requireHttps: true
+            routes: {
+              apiPrefix: '/.auth'
+            }
+            forwardProxy: {
+              convention: 'NoProxy'
+            }
+          }
+          identityProviders: {
+            azureActiveDirectory: {
+              enabled: true
+              registration: {
+                openIdIssuer: '${environment().authentication.loginEndpoint}${authTenantId}/v2.0'
+                clientId: authClientId
+                clientSecretSettingName: 'OVERRIDE_USE_MI_FIC_ASSERTION_CLIENTID'
+              }
+              login: {
+                loginParameters: [
+                  'scope=openid profile email ${join(delegatedPermissions, ' ')}'
+                ]
+              }
+              validation: {
+                jwtClaimChecks: {}
+                allowedAudiences: [
+                  authIdentifierUri
+                ]
+                defaultAuthorizationPolicy: {
+                  allowedPrincipals: {}
+                  allowedApplications: union([authClientId], preAuthorizedClientIds)
+                }
+              }
+              isAutoProvisioned: false
+            }
+          }
+          login: {
+            routes: {
+              logoutEndpoint: '/.auth/logout'
+            }
+            tokenStore: {
+              enabled: true
+              tokenRefreshExtensionHours: 72
+              fileSystem: {}
+              azureBlobStorage: {}
+            }
+            preserveUrlFragmentsForLogins: false
+            allowedExternalRedirectUrls: []
+            cookieExpiration: {
+              convention: 'FixedTime'
+              timeToExpiration: '08:00:00'
+            }
+            nonce: {
+              validateNonce: true
+              nonceExpirationInterval: '00:05:00'
+            }
+          }
+          platform: {
+            enabled: true
+            runtimeVersion: '~1'
+          }
+        }  
+      }
+    ] : [
+      {
+        name: 'appsettings'
+        properties: allAppSettings
+      }
+    ]
     functionAppConfig: {
       deployment: {
         storage: {
@@ -126,83 +207,7 @@ module api 'br/public:avm/res/web/site:0.15.1' = {
     siteConfig: {
       alwaysOn: false
     }
-    virtualNetworkSubnetId: !empty(virtualNetworkSubnetId) ? virtualNetworkSubnetId : null
-    appSettingsKeyValuePairs: allAppSettings
-  }
-}
-
-// Configure App Service Authentication v2 (if auth parameters are provided)
-resource authSettings 'Microsoft.Web/sites/config@2023-12-01' = if (!empty(authClientId) && !empty(authTenantId)) {
-  name: '${name}/authsettingsV2'
-  dependsOn: [
-    api  // Ensure the Function App module completes before configuring authentication
-  ]
-  properties: {
-    globalValidation: {
-      requireAuthentication: true
-      unauthenticatedClientAction: 'Return401'
-      redirectToProvider: 'azureactivedirectory'
-    }
-    httpSettings: {
-      requireHttps: true
-      routes: {
-        apiPrefix: '/.auth'
-      }
-      forwardProxy: {
-        convention: 'NoProxy'
-      }
-    }
-    identityProviders: {
-      azureActiveDirectory: {
-        enabled: true
-        registration: {
-          openIdIssuer: '${environment().authentication.loginEndpoint}${authTenantId}/v2.0'
-          clientId: authClientId
-          clientSecretSettingName: 'OVERRIDE_USE_MI_FIC_ASSERTION_CLIENTID'
-        }
-        login: {
-          loginParameters: [
-            'scope=openid profile email ${join(delegatedPermissions, ' ')}'
-          ]
-        }
-        validation: {
-          jwtClaimChecks: {}
-          allowedAudiences: [
-            authIdentifierUri
-          ]
-          defaultAuthorizationPolicy: {
-            allowedPrincipals: {}
-            allowedApplications: union([authClientId], preAuthorizedClientIds)
-          }
-        }
-        isAutoProvisioned: false
-      }
-    }
-    login: {
-      routes: {
-        logoutEndpoint: '/.auth/logout'
-      }
-      tokenStore: {
-        enabled: true
-        tokenRefreshExtensionHours: 72
-        fileSystem: {}
-        azureBlobStorage: {}
-      }
-      preserveUrlFragmentsForLogins: false
-      allowedExternalRedirectUrls: []
-      cookieExpiration: {
-        convention: 'FixedTime'
-        timeToExpiration: '08:00:00'
-      }
-      nonce: {
-        validateNonce: true
-        nonceExpirationInterval: '00:05:00'
-      }
-    }
-    platform: {
-      enabled: true
-      runtimeVersion: '~1'
-    }
+    virtualNetworkSubnetResourceId: !empty(virtualNetworkSubnetResourceId) ? virtualNetworkSubnetResourceId : null
   }
 }
 
