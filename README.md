@@ -169,7 +169,7 @@ az storage blob download --container-name snippets --name <blob-name> --file <lo
 This verification step ensures your MCP server is correctly interacting with the local storage emulator and that the blob storage functionality is working as expected before deploying to Azure.
 
 ## Deploy to Azure for Remote MCP
-Stop the local server with `Cntrl+C`. 
+Stop the local server with `Ctrl+C`. 
 
 Switch back to the root directory `remote-mcp-functions-dotnet`. 
 
