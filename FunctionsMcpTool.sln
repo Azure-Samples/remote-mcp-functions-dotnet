@@ -3,7 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.12.35728.132
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FunctionsMcpTool", "src\FunctionsMcpTool.csproj", "{39248EBA-78B9-4E4C-86E4-F0B039D4A94D}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FunctionsMcpTool", "src\FunctionsMcpTool\FunctionsMcpTool.csproj", "{39248EBA-78B9-4E4C-86E4-F0B039D4A94D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WeatherApp", "src\McpWeatherApp\WeatherApp.csproj", "{B7A3C2D1-5E4F-6A7B-8C9D-0E1F2A3B4C5D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +17,10 @@ Global
 		{39248EBA-78B9-4E4C-86E4-F0B039D4A94D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{39248EBA-78B9-4E4C-86E4-F0B039D4A94D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{39248EBA-78B9-4E4C-86E4-F0B039D4A94D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B7A3C2D1-5E4F-6A7B-8C9D-0E1F2A3B4C5D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B7A3C2D1-5E4F-6A7B-8C9D-0E1F2A3B4C5D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B7A3C2D1-5E4F-6A7B-8C9D-0E1F2A3B4C5D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B7A3C2D1-5E4F-6A7B-8C9D-0E1F2A3B4C5D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

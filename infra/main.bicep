@@ -65,6 +65,7 @@ param logAnalyticsName string = ''
 param resourceGroupName string = ''
 param storageAccountName string = ''
 param vNetName string = ''
+param weatherServiceName string = ''
 @description('Id of the user identity to be used for testing and debugging. This is not required in production. Leave empty if not needed.')
 param principalId string = deployer().objectId
 
@@ -72,7 +73,9 @@ var abbrs = loadJsonContent('./abbreviations.json')
 var resourceToken = toLower(uniqueString(subscription().id, environmentName, location))
 var tags = { 'azd-env-name': environmentName }
 var functionAppName = !empty(apiServiceName) ? apiServiceName : '${abbrs.webSitesFunctions}api-${resourceToken}'
+var weatherFunctionAppName = !empty(weatherServiceName) ? weatherServiceName : '${abbrs.webSitesFunctions}weather-${resourceToken}'
 var deploymentStorageContainerName = 'app-package-${take(functionAppName, 32)}-${take(toLower(uniqueString(functionAppName, resourceToken)), 7)}'
+var weatherDeploymentStorageContainerName = 'app-package-${take(weatherFunctionAppName, 32)}-${take(toLower(uniqueString(weatherFunctionAppName, resourceToken)), 7)}'
 
 // Convert comma-separated string to array for pre-authorized client IDs
 var preAuthorizedClientIdsArray = !empty(preAuthorizedClientIds) ? map(split(preAuthorizedClientIds, ','), clientId => trim(clientId)) : []
@@ -93,6 +96,17 @@ module apiUserAssignedIdentity 'br/public:avm/res/managed-identity/user-assigned
     location: location
     tags: tags
     name: !empty(apiUserAssignedIdentityName) ? apiUserAssignedIdentityName : '${abbrs.managedIdentityUserAssignedIdentities}api-${resourceToken}'
+  }
+}
+
+// User assigned managed identity for the weather function app
+module weatherUserAssignedIdentity 'br/public:avm/res/managed-identity/user-assigned-identity:0.4.1' = {
+  name: 'weatherUserAssignedIdentity'
+  scope: rg
+  params: {
+    location: location
+    tags: tags
+    name: '${abbrs.managedIdentityUserAssignedIdentities}weather-${resourceToken}'
   }
 }
 
@@ -159,6 +173,31 @@ module entraApp 'app/entra.bicep' = {
   }
 }
 
+// Weather App - simpler MCP demo without authentication
+module weather './app/api.bicep' = {
+  name: 'weather'
+  scope: rg
+  params: {
+    name: weatherFunctionAppName
+    serviceName: 'weather'
+    location: location
+    tags: tags
+    applicationInsightsName: monitoring.outputs.name
+    appServicePlanId: appServicePlan.outputs.resourceId
+    runtimeName: 'dotnet-isolated'
+    runtimeVersion: '8.0'
+    storageAccountName: storage.outputs.name
+    enableBlob: storageEndpointConfig.enableBlob
+    enableQueue: storageEndpointConfig.enableQueue
+    enableTable: storageEndpointConfig.enableTable
+    deploymentStorageContainerName: weatherDeploymentStorageContainerName
+    identityId: weatherUserAssignedIdentity.outputs.resourceId
+    identityClientId: weatherUserAssignedIdentity.outputs.clientId
+    appSettings: {}
+    virtualNetworkSubnetResourceId: vnetEnabled ? serviceVirtualNetwork.outputs.appSubnetID : ''
+  }
+}
+
 // Backing storage for Azure functions backend API
 module storage 'br/public:avm/res/storage/storage-account:0.8.3' = {
   name: 'storage'
@@ -177,7 +216,10 @@ module storage 'br/public:avm/res/storage/storage-account:0.8.3' = {
       bypass: 'AzureServices'
     }
     blobServices: {
-      containers: [{name: deploymentStorageContainerName}]
+      containers: [
+        {name: deploymentStorageContainerName}
+        {name: weatherDeploymentStorageContainerName}
+      ]
     }
     minimumTlsVersion: 'TLS1_2'  // Enforcing TLS 1.2 for better security
     location: location
@@ -203,6 +245,7 @@ module rbac 'app/rbac.bicep' = {
     storageAccountName: storage.outputs.name
     appInsightsName: monitoring.outputs.name
     managedIdentityPrincipalId: apiUserAssignedIdentity.outputs.principalId
+    weatherManagedIdentityPrincipalId: weatherUserAssignedIdentity.outputs.principalId
     userIdentityPrincipalId: principalId
     enableBlob: storageEndpointConfig.enableBlob
     enableQueue: storageEndpointConfig.enableQueue
@@ -285,3 +328,7 @@ output PRE_AUTHORIZED_CLIENT_IDS string = preAuthorizedClientIds
 // Entra App redirect URI outputs (using predictable hostname)
 output CONFIGURED_REDIRECT_URIS array = entraApp.outputs.configuredRedirectUris
 output AUTH_REDIRECT_URI string = entraApp.outputs.authRedirectUri
+
+// Weather App outputs
+output SERVICE_WEATHER_NAME string = weather.outputs.SERVICE_API_NAME
+output SERVICE_WEATHER_DEFAULT_HOSTNAME string = weather.outputs.SERVICE_MCP_DEFAULT_HOSTNAME

@@ -1,6 +1,7 @@
 param storageAccountName string
 param appInsightsName string
 param managedIdentityPrincipalId string // Principal ID for the Managed Identity
+param weatherManagedIdentityPrincipalId string = '' // Principal ID for the Weather App Managed Identity
 param userIdentityPrincipalId string = '' // Principal ID for the User Identity
 param allowUserIdentityPrincipal bool = false // Flag to enable user identity role assignments
 param enableBlob bool = true
@@ -106,5 +107,39 @@ resource appInsightsRoleAssignment_User 'Microsoft.Authorization/roleAssignments
     roleDefinitionId: resourceId('Microsoft.Authorization/roleDefinitions', monitoringRoleDefinitionId)
     principalId: userIdentityPrincipalId // Use user identity ID
     principalType: 'User' // User Identity is a User Principal
+  }
+}
+
+// Weather App Role Assignments (only if weather identity is provided)
+// Role assignment for Storage Account (Blob) - Weather Managed Identity
+resource storageRoleAssignment_Weather 'Microsoft.Authorization/roleAssignments@2022-04-01' = if (enableBlob && !empty(weatherManagedIdentityPrincipalId)) {
+  name: guid(storageAccount.id, weatherManagedIdentityPrincipalId, storageRoleDefinitionId)
+  scope: storageAccount
+  properties: {
+    roleDefinitionId: resourceId('Microsoft.Authorization/roleDefinitions', storageRoleDefinitionId)
+    principalId: weatherManagedIdentityPrincipalId
+    principalType: 'ServicePrincipal'
+  }
+}
+
+// Role assignment for Storage Account (Queue) - Weather Managed Identity
+resource queueRoleAssignment_Weather 'Microsoft.Authorization/roleAssignments@2022-04-01' = if (enableQueue && !empty(weatherManagedIdentityPrincipalId)) {
+  name: guid(storageAccount.id, weatherManagedIdentityPrincipalId, queueRoleDefinitionId)
+  scope: storageAccount
+  properties: {
+    roleDefinitionId: resourceId('Microsoft.Authorization/roleDefinitions', queueRoleDefinitionId)
+    principalId: weatherManagedIdentityPrincipalId
+    principalType: 'ServicePrincipal'
+  }
+}
+
+// Role assignment for Application Insights - Weather Managed Identity
+resource appInsightsRoleAssignment_Weather 'Microsoft.Authorization/roleAssignments@2022-04-01' = if (!empty(weatherManagedIdentityPrincipalId)) {
+  name: guid(applicationInsights.id, weatherManagedIdentityPrincipalId, monitoringRoleDefinitionId)
+  scope: applicationInsights
+  properties: {
+    roleDefinitionId: resourceId('Microsoft.Authorization/roleDefinitions', monitoringRoleDefinitionId)
+    principalId: weatherManagedIdentityPrincipalId
+    principalType: 'ServicePrincipal'
   }
 }
