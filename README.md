@@ -16,17 +16,13 @@ urlFragment: remote-mcp-functions-dotnet
 
 # Getting Started with Remote MCP Servers using Azure Functions (.NET/C#)
 
-This is a quickstart template to easily build and deploy a custom remote MCP server to the cloud using Azure functions. You can clone/restore/run on your local machine with debugging, and `azd up` to have it in the cloud in a couple minutes. 
+This is a quickstart template to easily build and deploy a custom remote MCP server to the cloud using Azure functions. You can clone/restore/run on your local machine with debugging, and `azd up` to have it in the cloud in a couple minutes.
 
-The MCP server is configured with [built-in authentication](https://learn.microsoft.com/en-us/azure/app-service/overview-authentication-authorization) using Microsoft Entra as the identity provider. 
+The MCP server is configured with [built-in authentication](https://learn.microsoft.com/en-us/azure/app-service/overview-authentication-authorization) using Microsoft Entra as the identity provider.
 
-You can also use [API Management](https://learn.microsoft.com/azure/api-management/secure-mcp-servers) to secure the server, as well as network isolation using VNET.  
+You can also use [API Management](https://learn.microsoft.com/azure/api-management/secure-mcp-servers) to secure the server, as well as network isolation using VNET.
 
-**Watch the video overview**
-
-<a href="https://www.youtube.com/watch?v=XwnEtZxaokg">
-  <img src="./images/video-overview.png" alt="Watch the video" width="500" />
-</a>
+[![Watch the video](./images/video-overview.png)](https://www.youtube.com/watch?v=XwnEtZxaokg)
 
 If you're looking for this sample in more languages check out the [Node.js/TypeScript](https://github.com/Azure-Samples/remote-mcp-functions-typescript) and [Python](https://github.com/Azure-Samples/remote-mcp-functions-python) samples.  
 
@@ -34,16 +30,19 @@ If you're looking for this sample in more languages check out the [Node.js/TypeS
 
 ## Prerequisites
 
-### Required for all development approaches:
+### Required for all development approaches
+
 + [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0)
 + [Azure Functions Core Tools](https://learn.microsoft.com/azure/azure-functions/functions-run-local?pivots=programming-language-csharp#install-the-azure-functions-core-tools) >= `4.0.7030`
 + [Azure Developer CLI](https://aka.ms/azd) (for deployment)
 
-### For Visual Studio development:
+### For Visual Studio development
+
 + [Visual Studio 2022](https://visualstudio.microsoft.com/vs/)
 + Make sure to select the **Azure development** workload during installation
 
-### For Visual Studio Code development:
+### For Visual Studio Code development
+
 + [Visual Studio Code](https://code.visualstudio.com/)
 + [Azure Functions extension](https://marketplace.visualstudio.com/items?itemName=ms-azuretools.vscode-azurefunctions)
 
@@ -55,40 +54,39 @@ Below is the architecture diagram for the Remote MCP Server using Azure Function
 
 ## Prepare your local environment
 
-An Azure Storage Emulator is needed for this particular sample because we will save and get snippets from blob storage. Start Azurite emulator: 
+An Azure Storage Emulator is needed for this particular sample because we will save and get snippets from blob storage. Start Azurite emulator:
 
 ```shell
-docker run -p 10000:10000 -p 10001:10001 -p 10002:10002 \
+docker run -d -p 10000:10000 -p 10001:10001 -p 10002:10002 \
     mcr.microsoft.com/azure-storage/azurite
 ```
 
 >**Note** if you use Azurite coming from VS Code extension you need to run `Azurite: Start` now or you will see errors.
 
-## Run your MCP Server locally
+## Run and test locally
 
-Choose your preferred development environment:
+### MCP Functions Tool
 
-### Option A: Using Visual Studio Code
+#### Step 1: Start the Functions host
 
-#### Run from Terminal
-1. From the `src` folder, run this command to start the Functions host locally:
+From the `src/FunctionsMcpTool` folder, run this command to start the Functions host locally:
 
-    ```shell
-    cd src
-    func start
-    ```
+```shell
+cd src/FunctionsMcpTool
+func start
+```
 
-## Connect to your *local* MCP server from MCP client tools
+#### Step 2: Connect to the MCP server
 
-Once your Azure Functions MCP server is running locally (via either Visual Studio Code or Visual Studio), you can connect to it from various MCP client tools:
+You can connect to your local MCP server using VS Code with GitHub Copilot or MCP Inspector.
 
-### Using VS Code with GitHub Copilot
+##### Option A: VS Code with GitHub Copilot
 
-1. Open **.vscode/mcp.json**. Find the server called _local-mcp-function_ and click **Start** above the name. The server is already set up with the running Function app's MCP endpoint:
+1. Open **.vscode/mcp.json**. Find the server called *local-mcp-function* and click **Start** above the name. The server is already set up with the running Function app's MCP endpoint:
+
     ```shell
     http://localhost:7071/runtime/webhooks/mcp
     ```
-    > **Note**: If you're running from Visual Studio (not VS Code), use `http://localhost:7071/runtime/webhooks/mcp/sse` instead.
 
 1. In Copilot chat **agent** mode enter a prompt to trigger the tool, e.g., select some code and enter this prompt
 
@@ -105,10 +103,10 @@ Once your Azure Functions MCP server is running locally (via either Visual Studi
     ```
 
 1. When prompted to run the tool, consent by clicking **Continue**
-    
-1. When you're done, press Ctrl+C in the terminal window to stop the `func.exe` host process (or stop debugging in your IDE).
 
-### Using MCP Inspector
+1. When you're done, press Ctrl+C in the terminal window to stop the `func.exe` host process.
+
+##### Option B: MCP Inspector
 
 1. In a **new terminal window**, install and run MCP Inspector
 
@@ -116,35 +114,21 @@ Once your Azure Functions MCP server is running locally (via either Visual Studi
     npx @modelcontextprotocol/inspector
     ```
 
-1. CTRL click to load the MCP Inspector web app from the URL displayed by the app (e.g. http://0.0.0.0:5173/#resources)
-1. Set the transport type to `Streamable HTTP` 
+1. CTRL click to load the MCP Inspector web app from the URL displayed by the app (e.g. `http://0.0.0.0:5173/#resources`)
+1. Set the transport type to `Streamable HTTP`
 1. Set the URL to your running Function app's MCP endpoint and **Connect**:
+
     ```shell
     http://0.0.0.0:7071/runtime/webhooks/mcp
     ```
-    > **Note**: If you're running from Visual Studio (not VS Code), use `http://localhost:7071/runtime/webhooks/mcp/sse` instead.
 
-1. **List Tools**.  Click on a tool and **Run Tool**.
+1. **List Tools**. Click on a tool and **Run Tool**.
 
-### Troubleshooting Local Development
-
-**Problem**: Connection refused when trying to connect to MCP server
-- **Solution**: Ensure Azurite is running (`docker run -p 10000:10000 -p 10001:10001 -p 10002:10002 mcr.microsoft.com/azure-storage/azurite`)
-
-**Problem**: Wrong URL (0.0.0.0 vs localhost)
-- **Solution**: Use `http://0.0.0.0:7071/runtime/webhooks/mcp` for VS Code, `http://localhost:7071/runtime/webhooks/mcp/sse` for Visual Studio
-
-**Problem**: Visual Studio F5 doesn't work
-- **Solution**: Ensure Azure development workload is installed and `FunctionsMcpTool` is set as startup project  
-
-**Problem**: The API version 2025-07-05 is not supported by Azurite
-- **Solution**: Pull the latest Azurite image (`docker pull mcr.microsoft.com/azure-storage/azurite`) then restart Azurite and the app. 
-
-## Verify local blob storage in Azurite
+#### Verify local blob storage (optional)
 
 After testing the snippet save functionality locally, you can verify that blobs are being stored correctly in your local Azurite storage emulator.
 
-### Using Azure Storage Explorer
+**Using Azure Storage Explorer:**
 
 1. Open Azure Storage Explorer
 1. In the left panel, expand **Emulator & Attached** → **Storage Accounts** → **(Emulator - Default Ports) (Key)**
@@ -152,9 +136,7 @@ After testing the snippet save functionality locally, you can verify that blobs 
 1. You should see any saved snippets as blob files in this container
 1. Double-click on any blob to view its contents and verify the snippet data was saved correctly
 
-### Using Azure CLI (Alternative)
-
-If you prefer using the command line, you can also verify blobs using Azure CLI with the storage emulator:
+**Using Azure CLI (alternative):**
 
 ```shell
 # List blobs in the snippets container
@@ -166,83 +148,90 @@ az storage blob list --container-name snippets --connection-string "DefaultEndpo
 az storage blob download --container-name snippets --name <blob-name> --file <local-file-path> --connection-string "DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;BlobEndpoint=http://127.0.0.1:10000/devstoreaccount1;"
 ```
 
-This verification step ensures your MCP server is correctly interacting with the local storage emulator and that the blob storage functionality is working as expected before deploying to Azure.
+### Weather MCP App
 
-## Deploy to Azure for Remote MCP
-Stop the local server with `Ctrl+C`. 
+This repository also includes a Weather App sample that demonstrates MCP tools with an interactive UI. See [src/McpWeatherApp/README.md](src/McpWeatherApp/README.md) for details.
 
-Switch back to the root directory `remote-mcp-functions-dotnet`. 
+1. Build the UI:
 
-Sign in to Azure and initialize [azd](https://aka.ms/azd):
+    ```shell
+    cd src/McpWeatherApp/app
+    npm install
+    npm run build
+    cd ..
+    ```
+
+1. Run the function app:
+
+    ```shell
+    func start
+    ```
+
+1. In **.vscode/mcp.json**, click **Start** above *local-mcp-function*
+
+1. Ask Copilot: "What's the weather in Seattle?"
+
+## Deploy to Azure
+
+Stop the local server with `Ctrl+C` and switch back to the root directory.
+
+### Step 1: Sign in to Azure
 
 ```shell
 az login
 azd auth login
 ```
 
-Create a new azd project environment:
+### Step 2: Create an environment and configure
 
 ```shell
 azd env new <environment-name>
 ```
 
-We'll test the remote server with Visual Studio Code, so configure it as an allowed client application to request access tokens from Microsoft Entra:
+Configure VS Code as an allowed client application to request access tokens from Microsoft Entra:
 
 ```shell
 azd env set PRE_AUTHORIZED_CLIENT_IDS aebc6443-996d-45c2-90f0-388ff96faa56
 ```
 
-Run this [azd](https://aka.ms/azd) command to provision the function app, with any required Azure resources, and deploy your code:
-
-```shell
-azd up
-```
-
-You can opt-in to a VNet being used in the sample. To do so, do this before `azd up`
+**Optional:** Enable VNet isolation:
 
 ```bash
 azd env set VNET_ENABLED true
 ```
 
-### Connect to remote MCP server in Visual Studio Code - GitHub Copilot
+### Step 3: Deploy
 
-Connect to the remote MCP server after deployment finishes. For GitHub Copilot within VS Code, use `https://<funcappname>.azurewebsites.net/runtime/webhooks/mcp` for the URL. Note a [mcp.json](.vscode/mcp.json) is already included in this repo and will be picked up by VS Code, so just click **Start** above _remote-mcp-function_ to be prompted for `functionapp-name` (in your azd command output or /.azure/*/.env file). You'll also be prompted to authenticate with Microsoft. Click **Allow** and login with your Azure subscription email. 
+Deploy both apps:
 
->[!TIP]
->Successful connect shows the number of tools the server has. You can see more details on the interactions between VS Code and server by clicking on **More... -> Show Output** above the server name. 
-
-```json
-{
-    "inputs": [
-        {
-            "type": "promptString",
-            "id": "functionapp-name",
-            "description": "Azure Functions App Name"
-        }
-    ],
-    "servers": {
-        "remote-mcp-function": {
-            "type": "http",
-            "url": "https://${input:functionapp-name}.azurewebsites.net/runtime/webhooks/mcp",
-        },
-        "local-mcp-function": {
-            "type": "http",
-            "url": "http://localhost:7071/runtime/webhooks/mcp"
-        }
-    }
-}
+```shell
+azd up
 ```
 
-## Redeploy your code
+Or deploy a specific app:
 
-You can run the `azd up` command as many times as you need to both provision your Azure resources and deploy code updates to your function app.
+```shell
+# Deploy only the MCP Tool (with Entra auth)
+azd deploy api
 
->[!NOTE]
->Deployed code files are always overwritten by the latest deployment package.
+# Deploy only the Weather App (no auth)
+azd deploy weather
+```
 
-## Clean up resources
+### Step 4: Connect to the remote MCP server
 
-When you're done working with your function app and related resources, you can use this command to delete the function app and its related resources from Azure and avoid incurring any further costs:
+After deployment finishes, open **.vscode/mcp.json** and click **Start** above *remote-mcp-function*. You'll be prompted for `functionapp-name` (find it in your azd command output or `/.azure/*/.env` file). You'll also be prompted to authenticate with Microsoft—click **Allow** and login with your Azure subscription email.
+
+>[!TIP]
+>Successful connect shows the number of tools the server has. You can see more details on the interactions between VS Code and server by clicking on **More... -> Show Output** above the server name.
+
+## Redeploy and clean up
+
+**Redeploy all:** Run `azd up` as many times as needed to deploy code updates.
+
+**Redeploy one service:** Use `azd deploy api` or `azd deploy weather` to redeploy a specific app.
+
+**Clean up:** Delete all Azure resources when done:
 
 ```shell
 azd down
@@ -250,7 +239,7 @@ azd down
 
 ## Source Code
 
-The function code for the `GetSnippet` and `SaveSnippet` endpoints are defined in [`SnippetsTool.cs`](./src/SnippetsTool.cs). The `McpToolsTrigger` attribute applied to the async `Run` method exposes the code function as an MCP Server.
+The function code for the `GetSnippet` and `SaveSnippet` endpoints are defined in [`SnippetsTool.cs`](./src/FunctionsMcpTool/SnippetsTool.cs). The `McpToolsTrigger` attribute applied to the async `Run` method exposes the code function as an MCP Server.
 
 The following shows the code for a few MCP server examples (get string, get object, save object):
 
@@ -285,6 +274,13 @@ public string SayHello(
 
 ## Next Steps
 
-- Add [API Management](https://github.com/Azure-Samples/remote-mcp-apim-functions-python) to your MCP server
-- Enable VNET using VNET_ENABLED=true flag
-- Learn more about [related MCP efforts from Microsoft](https://github.com/microsoft/mcp/tree/main/Resources)
++ Add [API Management](https://github.com/Azure-Samples/remote-mcp-apim-functions-python) to your MCP server
++ Enable VNET using VNET_ENABLED=true flag
++ Learn more about [related MCP efforts from Microsoft](https://github.com/microsoft/mcp/tree/main/Resources)
+
+## Troubleshooting
+
+| Problem | Solution |
+|---------|----------|
+| Connection refused | Ensure Azurite is running (`docker run -p 10000:10000 -p 10001:10001 -p 10002:10002 mcr.microsoft.com/azure-storage/azurite`) |
+| API version not supported by Azurite | Pull the latest Azurite image (`docker pull mcr.microsoft.com/azure-storage/azurite`) then restart Azurite and the app |

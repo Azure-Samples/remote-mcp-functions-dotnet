@@ -5,6 +5,10 @@ metadata:
   template: remote-mcp-functions-dotnet@1.0.1
 services:
   api:
-    project: ./src/
+    project: ./src/FunctionsMcpTool/
+    language: dotnet
+    host: function
+  weather:
+    project: ./src/McpWeatherApp/
     language: dotnet
     host: function

@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weather Widget</title>
+    <style>
+        :root {
+            --bg: linear-gradient(145deg, #0f172a 0%, #0b324f 50%, #0f766e 100%);
+            --card: rgba(255,255,255,0.1);
+            --text: #f8fafc;
+            --muted: #cbd5e1;
+            --accent: #fbbf24;
+            --shadow: 0 20px 50px rgba(0,0,0,0.35);
+            --radius: 18px;
+        }
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            padding: 24px;
+            font-family: "Poppins", "Segoe UI", system-ui, -apple-system, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .widget {
+            width: min(640px, 100%);
+            background: var(--card);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            padding: 24px;
+        }
+        .header {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            margin-bottom: 16px;
+        }
+        .icon {
+            width: 72px;
+            height: 72px;
+            border-radius: 16px;
+            background: rgba(255,255,255,0.08);
+            display: grid;
+            place-items: center;
+            font-size: 44px;
+        }
+        .title {
+            font-size: 1.4rem;
+            font-weight: 700;
+            margin: 0;
+        }
+        .subtitle {
+            margin: 4px 0 0;
+            color: var(--muted);
+            font-size: 0.95rem;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 12px;
+            margin-top: 12px;
+        }
+        .card {
+            background: rgba(255,255,255,0.08);
+            border-radius: 14px;
+            padding: 14px;
+            border: 1px solid rgba(255,255,255,0.08);
+        }
+        .label { color: var(--muted); font-size: 0.85rem; margin: 0 0 6px; }
+        .value { margin: 0; font-size: 1.1rem; font-weight: 600; }
+        .footer {
+            margin-top: 12px;
+            font-size: 0.82rem;
+            color: var(--muted);
+        }
+    </style>
+</head>
+<body>
+    <div class="widget">
+        <div class="header">
+            <div class="icon" id="weather-icon">🌤️</div>
+            <div>
+                <p class="title" id="location">Weather</p>
+                <p class="subtitle" id="condition">Waiting for tool output…</p>
+            </div>
+        </div>
+        <div class="grid">
+            <div class="card">
+                <p class="label">Temperature</p>
+                <p class="value" id="temperature">—</p>
+            </div>
+            <div class="card">
+                <p class="label">Humidity</p>
+                <p class="value" id="humidity">—</p>
+            </div>
+            <div class="card">
+                <p class="label">Wind</p>
+                <p class="value" id="wind">—</p>
+            </div>
+        </div>
+        <div class="footer" id="footer">Connecting...</div>
+    </div>
+    <script type="module" src="/src/weather-app.ts"></script>
+</body>
+</html>
