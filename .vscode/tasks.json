@@ -12,7 +12,7 @@
 			"type": "process",
 			"problemMatcher": "$msCompile",
 			"options": {
-				"cwd": "${workspaceFolder}/src"
+				"cwd": "${workspaceFolder}/src/${input:project}"
 			}
 		},
 		{
@@ -31,7 +31,7 @@
 			},
 			"problemMatcher": "$msCompile",
 			"options": {
-				"cwd": "${workspaceFolder}/src"
+				"cwd": "${workspaceFolder}/src/${input:project}"
 			}
 		},
 		{
@@ -47,7 +47,7 @@
 			"type": "process",
 			"problemMatcher": "$msCompile",
 			"options": {
-				"cwd": "${workspaceFolder}/src"
+				"cwd": "${workspaceFolder}/src/${input:project}"
 			}
 		},
 		{
@@ -64,18 +64,31 @@
 			"dependsOn": "clean release (functions)",
 			"problemMatcher": "$msCompile",
 			"options": {
-				"cwd": "${workspaceFolder}/src"
+				"cwd": "${workspaceFolder}/src/${input:project}"
 			}
 		},
 		{
+			"label": "start functions",
 			"type": "func",
 			"dependsOn": "build (functions)",
 			"options": {
-				"cwd": "${workspaceFolder}/src/bin/Debug/net10.0"
+				"cwd": "${workspaceFolder}/out/bin/${input:project}/debug"
 			},
 			"command": "host start",
 			"isBackground": true,
 			"problemMatcher": "$func-dotnet-watch"
+		}
+	],
+	"inputs": [
+		{
+			"id": "project",
+			"type": "pickString",
+			"description": "Which project do you want to debug?",
+			"options": [
+				"FunctionsMcpTool",
+				"McpWeatherApp"
+			],
+			"default": "FunctionsMcpTool"
 		}
 	]
 }
