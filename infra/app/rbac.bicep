@@ -1,6 +1,6 @@
 param storageAccountName string
 param appInsightsName string
-param managedIdentityPrincipalId string // Principal ID for the Managed Identity
+param managedIdentityPrincipalId string = '' // Principal ID for the API Managed Identity
 param weatherManagedIdentityPrincipalId string = '' // Principal ID for the Weather App Managed Identity
 param userIdentityPrincipalId string = '' // Principal ID for the User Identity
 param allowUserIdentityPrincipal bool = false // Flag to enable user identity role assignments
@@ -23,7 +23,7 @@ resource applicationInsights 'Microsoft.Insights/components@2020-02-02' existing
 }
 
 // Role assignment for Storage Account (Blob) - Managed Identity
-resource storageRoleAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = if (enableBlob) {
+resource storageRoleAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = if (enableBlob && !empty(managedIdentityPrincipalId)) {
   name: guid(storageAccount.id, managedIdentityPrincipalId, storageRoleDefinitionId) // Use managed identity ID
   scope: storageAccount
   properties: {
@@ -45,7 +45,7 @@ resource storageRoleAssignment_User 'Microsoft.Authorization/roleAssignments@202
 }
 
 // Role assignment for Storage Account (Queue) - Managed Identity
-resource queueRoleAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = if (enableQueue) {
+resource queueRoleAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = if (enableQueue && !empty(managedIdentityPrincipalId)) {
   name: guid(storageAccount.id, managedIdentityPrincipalId, queueRoleDefinitionId) // Use managed identity ID
   scope: storageAccount
   properties: {
@@ -67,7 +67,7 @@ resource queueRoleAssignment_User 'Microsoft.Authorization/roleAssignments@2022-
 }
 
 // Role assignment for Storage Account (Table) - Managed Identity
-resource tableRoleAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = if (enableTable) {
+resource tableRoleAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = if (enableTable && !empty(managedIdentityPrincipalId)) {
   name: guid(storageAccount.id, managedIdentityPrincipalId, tableRoleDefinitionId) // Use managed identity ID
   scope: storageAccount
   properties: {
@@ -89,7 +89,7 @@ resource tableRoleAssignment_User 'Microsoft.Authorization/roleAssignments@2022-
 }
 
 // Role assignment for Application Insights - Managed Identity
-resource appInsightsRoleAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+resource appInsightsRoleAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = if (!empty(managedIdentityPrincipalId)) {
   name: guid(applicationInsights.id, managedIdentityPrincipalId, monitoringRoleDefinitionId) // Use managed identity ID
   scope: applicationInsights
   properties: {

@@ -57,6 +57,11 @@ param delegatedPermissions array = ['User.Read']
 })
 param location string
 param vnetEnabled bool
+
+@description('Which service to deploy: api or weather. Only one function app is provisioned per Flex Consumption plan.')
+@allowed(['api', 'weather'])
+param deployService string = 'api'
+
 param apiServiceName string = ''
 param apiUserAssignedIdentityName string = ''
 param applicationInsightsName string = ''
@@ -72,6 +77,8 @@ param principalId string = deployer().objectId
 var abbrs = loadJsonContent('./abbreviations.json')
 var resourceToken = toLower(uniqueString(subscription().id, environmentName, location))
 var tags = { 'azd-env-name': environmentName }
+var deployApi = deployService == 'api'
+var deployWeather = deployService == 'weather'
 var functionAppName = !empty(apiServiceName) ? apiServiceName : '${abbrs.webSitesFunctions}api-${resourceToken}'
 var weatherFunctionAppName = !empty(weatherServiceName) ? weatherServiceName : '${abbrs.webSitesFunctions}weather-${resourceToken}'
 var deploymentStorageContainerName = 'app-package-${take(functionAppName, 32)}-${take(toLower(uniqueString(functionAppName, resourceToken)), 7)}'
@@ -89,7 +96,7 @@ resource rg 'Microsoft.Resources/resourceGroups@2021-04-01' = {
 
 // User assigned managed identity to be used by the function app to reach storage and other dependencies
 // Assign specific roles to this identity in the RBAC module
-module apiUserAssignedIdentity 'br/public:avm/res/managed-identity/user-assigned-identity:0.4.1' = {
+module apiUserAssignedIdentity 'br/public:avm/res/managed-identity/user-assigned-identity:0.4.1' = if (deployApi) {
   name: 'apiUserAssignedIdentity'
   scope: rg
   params: {
@@ -100,7 +107,7 @@ module apiUserAssignedIdentity 'br/public:avm/res/managed-identity/user-assigned
 }
 
 // User assigned managed identity for the weather function app
-module weatherUserAssignedIdentity 'br/public:avm/res/managed-identity/user-assigned-identity:0.4.1' = {
+module weatherUserAssignedIdentity 'br/public:avm/res/managed-identity/user-assigned-identity:0.4.1' = if (deployWeather) {
   name: 'weatherUserAssignedIdentity'
   scope: rg
   params: {
@@ -126,7 +133,7 @@ module appServicePlan 'br/public:avm/res/web/serverfarm:0.1.1' = {
   }
 }
 
-module api './app/api.bicep' = {
+module api './app/api.bicep' = if (deployApi) {
   name: 'api'
   scope: rg
   params: {
@@ -142,23 +149,23 @@ module api './app/api.bicep' = {
     enableQueue: storageEndpointConfig.enableQueue
     enableTable: storageEndpointConfig.enableTable
     deploymentStorageContainerName: deploymentStorageContainerName
-    identityId: apiUserAssignedIdentity.outputs.resourceId
-    identityClientId: apiUserAssignedIdentity.outputs.clientId
+    identityId: apiUserAssignedIdentity!.outputs.resourceId
+    identityClientId: apiUserAssignedIdentity!.outputs.clientId
     preAuthorizedClientIds: preAuthorizedClientIdsArray
     appSettings: {
     }
-    virtualNetworkSubnetResourceId: vnetEnabled ? serviceVirtualNetwork.outputs.appSubnetID : ''
+    virtualNetworkSubnetResourceId: vnetEnabled ? serviceVirtualNetwork!.outputs.appSubnetID : ''
         // Authorization parameters
-    authClientId: entraApp.outputs.applicationId
-    authIdentifierUri: entraApp.outputs.identifierUri
-    authExposedScopes: entraApp.outputs.exposedScopes
+    authClientId: entraApp!.outputs.applicationId
+    authIdentifierUri: entraApp!.outputs.identifierUri
+    authExposedScopes: entraApp!.outputs.exposedScopes
     authTenantId: tenant().tenantId
     delegatedPermissions: delegatedPermissions
   }
 }
 
 // Entra ID application registration for MCP authentication (with predictable hostname)
-module entraApp 'app/entra.bicep' = {
+module entraApp 'app/entra.bicep' = if (deployApi) {
   name: 'entraApp'
   scope: rg
   params: {
@@ -167,14 +174,14 @@ module entraApp 'app/entra.bicep' = {
     serviceManagementReference: serviceManagementReference
     functionAppHostname: '${functionAppName}.azurewebsites.net'
     preAuthorizedClientIds: preAuthorizedClientIdsArray
-    managedIdentityClientId: apiUserAssignedIdentity.outputs.clientId
-    managedIdentityPrincipalId: apiUserAssignedIdentity.outputs.principalId
+    managedIdentityClientId: apiUserAssignedIdentity!.outputs.clientId
+    managedIdentityPrincipalId: apiUserAssignedIdentity!.outputs.principalId
     tags: tags
   }
 }
 
 // Weather App - simpler MCP demo without authentication
-module weather './app/api.bicep' = {
+module weather './app/api.bicep' = if (deployWeather) {
   name: 'weather'
   scope: rg
   params: {
@@ -185,16 +192,16 @@ module weather './app/api.bicep' = {
     applicationInsightsName: monitoring.outputs.name
     appServicePlanId: appServicePlan.outputs.resourceId
     runtimeName: 'dotnet-isolated'
-    runtimeVersion: '8.0'
+    runtimeVersion: '10.0'
     storageAccountName: storage.outputs.name
     enableBlob: storageEndpointConfig.enableBlob
     enableQueue: storageEndpointConfig.enableQueue
     enableTable: storageEndpointConfig.enableTable
     deploymentStorageContainerName: weatherDeploymentStorageContainerName
-    identityId: weatherUserAssignedIdentity.outputs.resourceId
-    identityClientId: weatherUserAssignedIdentity.outputs.clientId
+    identityId: weatherUserAssignedIdentity!.outputs.resourceId
+    identityClientId: weatherUserAssignedIdentity!.outputs.clientId
     appSettings: {}
-    virtualNetworkSubnetResourceId: vnetEnabled ? serviceVirtualNetwork.outputs.appSubnetID : ''
+    virtualNetworkSubnetResourceId: vnetEnabled ? serviceVirtualNetwork!.outputs.appSubnetID : ''
   }
 }
 
@@ -216,8 +223,9 @@ module storage 'br/public:avm/res/storage/storage-account:0.8.3' = {
       bypass: 'AzureServices'
     }
     blobServices: {
-      containers: [
+      containers: deployApi ? [
         {name: deploymentStorageContainerName}
+      ] : [
         {name: weatherDeploymentStorageContainerName}
       ]
     }
@@ -244,8 +252,8 @@ module rbac 'app/rbac.bicep' = {
   params: {
     storageAccountName: storage.outputs.name
     appInsightsName: monitoring.outputs.name
-    managedIdentityPrincipalId: apiUserAssignedIdentity.outputs.principalId
-    weatherManagedIdentityPrincipalId: weatherUserAssignedIdentity.outputs.principalId
+    managedIdentityPrincipalId: deployApi ? apiUserAssignedIdentity!.outputs.principalId : ''
+    weatherManagedIdentityPrincipalId: deployWeather ? weatherUserAssignedIdentity!.outputs.principalId : ''
     userIdentityPrincipalId: principalId
     enableBlob: storageEndpointConfig.enableBlob
     enableQueue: storageEndpointConfig.enableQueue
@@ -272,7 +280,7 @@ module storagePrivateEndpoint 'app/storage-PrivateEndpoint.bicep' = if (vnetEnab
     location: location
     tags: tags
     virtualNetworkName: !empty(vNetName) ? vNetName : '${abbrs.networkVirtualNetworks}${resourceToken}'
-    subnetName: vnetEnabled ? serviceVirtualNetwork.outputs.peSubnetName : '' // Keep conditional check for safety, though module won't run if !vnetEnabled
+    subnetName: vnetEnabled ? serviceVirtualNetwork!.outputs.peSubnetName : '' // Keep conditional check for safety, though module won't run if !vnetEnabled
     resourceName: storage.outputs.name
     enableBlob: storageEndpointConfig.enableBlob
     enableQueue: storageEndpointConfig.enableQueue
@@ -308,27 +316,27 @@ module monitoring 'br/public:avm/res/insights/component:0.6.0' = {
 output APPLICATIONINSIGHTS_CONNECTION_STRING string = monitoring.outputs.connectionString
 output AZURE_LOCATION string = location
 output AZURE_TENANT_ID string = tenant().tenantId
-output SERVICE_API_NAME string = api.outputs.SERVICE_API_NAME
-output SERVICE_API_DEFAULT_HOSTNAME string = api.outputs.SERVICE_MCP_DEFAULT_HOSTNAME
-output AZURE_FUNCTION_NAME string = api.outputs.SERVICE_API_NAME
+output SERVICE_API_NAME string = deployApi ? api!.outputs.SERVICE_API_NAME : ''
+output SERVICE_API_DEFAULT_HOSTNAME string = deployApi ? api!.outputs.SERVICE_MCP_DEFAULT_HOSTNAME : ''
+output AZURE_FUNCTION_NAME string = deployApi ? api!.outputs.SERVICE_API_NAME : ''
 
 // Entra App outputs (using the initial app for core properties)
-output ENTRA_APPLICATION_ID string = entraApp.outputs.applicationId
-output ENTRA_APPLICATION_OBJECT_ID string = entraApp.outputs.applicationObjectId
-output ENTRA_SERVICE_PRINCIPAL_ID string = entraApp.outputs.servicePrincipalId
-output ENTRA_IDENTIFIER_URI string = entraApp.outputs.identifierUri
+output ENTRA_APPLICATION_ID string = deployApi ? entraApp!.outputs.applicationId : ''
+output ENTRA_APPLICATION_OBJECT_ID string = deployApi ? entraApp!.outputs.applicationObjectId : ''
+output ENTRA_SERVICE_PRINCIPAL_ID string = deployApi ? entraApp!.outputs.servicePrincipalId : ''
+output ENTRA_IDENTIFIER_URI string = deployApi ? entraApp!.outputs.identifierUri : ''
 
 // Authorization outputs
-output AUTH_ENABLED bool = api.outputs.AUTH_ENABLED
-output CONFIGURED_SCOPES string = api.outputs.CONFIGURED_SCOPES
+output AUTH_ENABLED bool = deployApi ? api!.outputs.AUTH_ENABLED : false
+output CONFIGURED_SCOPES string = deployApi ? api!.outputs.CONFIGURED_SCOPES : ''
 
 // Pre-authorized applications
 output PRE_AUTHORIZED_CLIENT_IDS string = preAuthorizedClientIds
 
 // Entra App redirect URI outputs (using predictable hostname)
-output CONFIGURED_REDIRECT_URIS array = entraApp.outputs.configuredRedirectUris
-output AUTH_REDIRECT_URI string = entraApp.outputs.authRedirectUri
+output CONFIGURED_REDIRECT_URIS array = deployApi ? entraApp!.outputs.configuredRedirectUris : []
+output AUTH_REDIRECT_URI string = deployApi ? entraApp!.outputs.authRedirectUri : ''
 
 // Weather App outputs
-output SERVICE_WEATHER_NAME string = weather.outputs.SERVICE_API_NAME
-output SERVICE_WEATHER_DEFAULT_HOSTNAME string = weather.outputs.SERVICE_MCP_DEFAULT_HOSTNAME
+output SERVICE_WEATHER_NAME string = deployWeather ? weather!.outputs.SERVICE_API_NAME : ''
+output SERVICE_WEATHER_DEFAULT_HOSTNAME string = deployWeather ? weather!.outputs.SERVICE_MCP_DEFAULT_HOSTNAME : ''
