@@ -131,3 +131,7 @@ public string GetWeatherWidget(
 ### The UI (TypeScript)
 
 The frontend in `app/src/weather-app.ts` receives the tool result and renders the weather display. It's bundled with Vite into a single `index.html` that the resource serves.
+
+### Deploy
+
+Follow [instructions](https://github.com/Azure-Samples/remote-mcp-functions-dotnet/blob/main/README.md#weather-mcp-app) in the main README to deploy the app. 
