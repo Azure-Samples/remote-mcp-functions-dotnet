@@ -34,7 +34,7 @@ If you're looking for this sample in more languages check out the [Node.js/TypeS
 
 + [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0)
 + [Azure Functions Core Tools](https://learn.microsoft.com/azure/azure-functions/functions-run-local?pivots=programming-language-csharp#install-the-azure-functions-core-tools) >= `4.0.7030`
-+ [Azure Developer CLI](https://aka.ms/azd) (for deployment)
++ [Azure Developer CLI](https://aka.ms/azd) **1.23.x or above** (for deployment)
 
 ### For Visual Studio development
 
@@ -202,21 +202,27 @@ azd env set VNET_ENABLED true
 
 ### Step 3: Deploy
 
-Deploy both apps:
+1. Set `DEPLOY_SERVICE` to provision the MCP App `weather` or MCP server `api`: 
+    ```shell
+    azd env set DEPLOY_SERVICE <weather or api> 
+    ```
 
-```shell
-azd up
-```
+1. Provision the resources for the app: 
+    ```shell
+    azd provision
+    ```
 
-Or deploy a specific app:
+    When prompted, pick your subscription, an Azure region for the resources, and choose `false` to skip creating virtual network resources to simplify the deployment.
 
-```shell
-# Deploy only the MCP Tool (with Entra auth)
-azd deploy api
+1. Deploy the app of your choice app:
 
-# Deploy only the Weather App (no auth)
-azd deploy weather
-```
+    ```shell
+    # Deploy only the MCP Tool (with Entra auth)
+    azd deploy --service api
+
+    # Deploy only the Weather App (with access token)
+    azd deploy --service weather
+    ```
 
 ### Step 4: Connect to the remote MCP server
 
