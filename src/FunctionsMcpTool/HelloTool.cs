@@ -6,7 +6,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Graph;
 
-namespace StraightforwardObo;
+namespace FunctionsMcpTool;
 
 /// <summary>
 /// A straightforward example of calling Microsoft Graph on behalf of the signed-in user.
