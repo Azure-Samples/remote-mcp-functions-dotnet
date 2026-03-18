@@ -1,4 +1,4 @@
-namespace FunctionsSnippetTool;
+namespace FunctionsMcpTool;
 
 internal sealed class ToolsInformation
 {
@@ -16,4 +16,10 @@ internal sealed class ToolsInformation
     public const string HelloToolName = "hello_tool";
     public const string HelloToolDescription =
         "Simple hello world MCP Tool that responses with a hello message.";
+    public const string BatchSaveSnippetsToolName = "batch_save_snippets";
+    public const string BatchSaveSnippetsToolDescription =
+        "Saves multiple code snippets at once into your snippet collection.";
+    public const string SnippetItemsPropertyName = "snippet_items";
+    public const string SnippetItemsPropertyDescription =
+        "Array of snippets to save, each as an object with a single property where the key is the snippet name and the value is the content. Example: [{\"hello\": \"console.log('hi')\"}, {\"bye\": \"console.log('bye')\"}]";
 }
