@@ -1,4 +1,4 @@
-FROM mcr.microsoft.com/vscode/devcontainers/dotnet:dev-8.0-bookworm
+FROM mcr.microsoft.com/devcontainers/dotnet:dev-10.0-noble
 
 # Copy custom first notice message.
 COPY first-run-notice.txt /tmp/staging/
