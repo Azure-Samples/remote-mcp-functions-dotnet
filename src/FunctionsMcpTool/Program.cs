@@ -15,10 +15,10 @@ builder.Services
     .AddSingleton(_ => new BlobServiceClient(
         Environment.GetEnvironmentVariable("AzureWebJobsStorage")));
 
-// Demonstrate how you can define tool properties without requiring
-// input bindings:
+// Demonstrate how you can define tool properties in Program.cs
+// without requiring McpToolProperty input binding attributes:
 builder
-    .ConfigureMcpTool(GetSnippetToolName)
-    .WithProperty(SnippetNamePropertyName, McpToolPropertyType.String, SnippetNamePropertyDescription, required: true);
+    .ConfigureMcpTool(EchoToolName)
+    .WithProperty(EchoMessagePropertyName, McpToolPropertyType.String, EchoMessagePropertyDescription, required: true);
 
 builder.Build().Run();

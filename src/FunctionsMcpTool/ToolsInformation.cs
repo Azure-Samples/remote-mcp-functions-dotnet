@@ -2,6 +2,13 @@ namespace FunctionsMcpTool;
 
 internal sealed class ToolsInformation
 {
+    // Echo tool (properties configured in Program.cs via ConfigureMcpTool)
+    public const string EchoToolName = "echo_message";
+    public const string EchoToolDescription =
+        "Echoes back the provided message. Demonstrates defining tool properties in Program.cs.";
+    public const string EchoMessagePropertyName = "message";
+    public const string EchoMessagePropertyDescription = "The message to echo back.";
+
     // Hello tool
     public const string HelloToolName = "hello_tool";
     public const string HelloToolDescription =
