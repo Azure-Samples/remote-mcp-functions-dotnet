@@ -1,9 +1,9 @@
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Extensions.Mcp;
 using Microsoft.Extensions.Logging;
-using static FunctionsSnippetTool.ToolsInformation;
+using static FunctionsMcpTool.ToolsInformation;
 
-namespace FunctionsSnippetTool;
+namespace FunctionsMcpTool;
 
 public class HelloTool(ILogger<HelloTool> logger)
 {
