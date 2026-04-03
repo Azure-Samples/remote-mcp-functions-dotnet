@@ -2,6 +2,8 @@
 
 This project is a .NET 10 Azure Function app that exposes multiple MCP (Model Context Protocol) tools as a remote MCP server. It includes tools for snippets, QR code generation, badges, echo, hello, and a **hello with auth** tool that demonstrates the On-Behalf-Of (OBO) flow to call Microsoft Graph as the signed-in user.
 
+> **Note:** MCP prompts and resource templates are in separate projects — see [FunctionsMcpPrompts](../FunctionsMcpPrompts/) and [FunctionsMcpResources](../FunctionsMcpResources/).
+
 ## Prerequisites
 
 - [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0)
@@ -90,10 +92,10 @@ Configure VS Code as an allowed client application for Microsoft Entra authentic
 azd env set PRE_AUTHORIZED_CLIENT_IDS aebc6443-996d-45c2-90f0-388ff96faa56
 ```
 
-Set the deployment service to `api` (this project):
+Set the deployment service to `tools` (this project):
 
 ```shell
-azd env set DEPLOY_SERVICE api
+azd env set DEPLOY_SERVICE tools
 ```
 
 ### Step 3: Provision and deploy
@@ -105,7 +107,7 @@ azd provision
 When prompted, pick your subscription and an Azure region.
 
 ```shell
-azd deploy --service api
+azd deploy --service tools
 ```
 
 ### Step 4: Consent to the application
@@ -128,7 +130,7 @@ Open **`.vscode/mcp.json`** and click **Start** above **`remote-functions-mcp-to
 
 ## Redeploy and clean up
 
-- **Redeploy:** `azd deploy --service api`
+- **Redeploy:** `azd deploy --service tools`
 - **Clean up all resources:** `azd down`
 
 ## Examining the code
