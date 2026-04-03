@@ -14,6 +14,11 @@ internal sealed class ToolsInformation
     public const string HelloToolDescription =
         "Simple hello world MCP Tool that responds with a hello message.";
 
+    // Hello tool with auth, demonstrating On-Behalf-Of flow to call Microsoft Graph as the user
+    public const string HelloToolWithAuthName = "hello_tool_with_auth";
+    public const string HelloToolWithAuthDescription =
+        "Responds to the user with a hello message using OBO auth.";    
+
     // Snippet tools
     public const string GetSnippetToolName = "get_snippet";
     public const string GetSnippetToolDescription =
