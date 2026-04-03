@@ -1,9 +1,9 @@
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Extensions.Mcp;
 using Microsoft.Extensions.Logging;
-using static FunctionsMcpTool.ToolsInformation;
+using static FunctionsMcpResources.ResourcesInformation;
 
-namespace FunctionsMcpTool;
+namespace FunctionsMcpResources;
 
 public class ResourceTemplateSamples(ILogger<ResourceTemplateSamples> logger)
 {
@@ -45,7 +45,7 @@ public class ResourceTemplateSamples(ILogger<ResourceTemplateSamples> logger)
 
         return System.Text.Json.JsonSerializer.Serialize(new
         {
-            Name = "FunctionsMcpTool",
+            Name = "FunctionsMcpResources",
             Version = "1.4.0",
             Runtime = System.Runtime.InteropServices.RuntimeInformation.FrameworkDescription,
             Timestamp = DateTime.UtcNow

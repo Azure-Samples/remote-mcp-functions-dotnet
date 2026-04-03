@@ -21,16 +21,5 @@ builder
     .ConfigureMcpTool(EchoToolName)
     .WithProperty(EchoMessagePropertyName, McpToolPropertyType.String, EchoMessagePropertyDescription, required: true);
 
-// Demonstrate how you can define prompt arguments in Program.cs
-// without requiring McpPromptArgument input binding attributes:
-builder
-    .ConfigureMcpPrompt(GenerateDocsPromptName)
-    .WithArgument(GenerateDocsFunctionNameArgName, GenerateDocsFunctionNameArgDescription, required: true)
-    .WithArgument(GenerateDocsStyleArgName, GenerateDocsStyleArgDescription);
-
-// Demonstrate how you can configure metadata on a resource:
-builder
-    .ConfigureMcpResource(ServerInfoResourceUri)
-    .WithMetadata("cache", new { ttlSeconds = 60 });
 
 builder.Build().Run();

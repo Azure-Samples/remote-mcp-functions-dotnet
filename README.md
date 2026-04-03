@@ -76,6 +76,18 @@ cd src/FunctionsMcpTool
 func start
 ```
 
+> **Note:** The MCP Resources and Prompts projects run as separate Function Apps. To start them locally alongside the tools server, open additional terminals:
+>
+> ```shell
+> cd src/FunctionsMcpResources
+> func start --port 7072
+> ```
+>
+> ```shell
+> cd src/FunctionsMcpPrompts
+> func start --port 7073
+> ```
+
 #### Step 2: Connect to the MCP server
 
 You can connect to your local MCP server using VS Code with GitHub Copilot or MCP Inspector.
@@ -202,9 +214,9 @@ azd env set VNET_ENABLED true
 
 ### Step 3: Deploy
 
-1. Set `DEPLOY_SERVICE` to provision the MCP App `weather` or MCP server `api`: 
+1. Set `DEPLOY_SERVICE` to provision one of the MCP server projects: 
     ```shell
-    azd env set DEPLOY_SERVICE <weather or api> 
+    azd env set DEPLOY_SERVICE <tools, resources, prompts, or weather> 
     ```
 
 1. Provision the resources for the app: 
@@ -214,11 +226,17 @@ azd env set VNET_ENABLED true
 
     When prompted, pick your subscription, an Azure region for the resources, and choose `false` to skip creating virtual network resources to simplify the deployment.
 
-1. Deploy the app of your choice app:
+1. Deploy the app of your choice:
 
     ```shell
-    # Deploy only the MCP Tool (with Entra auth)
-    azd deploy --service api
+    # Deploy only the MCP Tools (with Entra auth)
+    azd deploy --service tools
+
+    # Deploy only the MCP Resources
+    azd deploy --service resources
+
+    # Deploy only the MCP Prompts
+    azd deploy --service prompts
 
     # Deploy only the Weather App (with access token)
     azd deploy --service weather
@@ -235,7 +253,7 @@ After deployment finishes, open **.vscode/mcp.json** and click **Start** above *
 
 **Redeploy all:** Run `azd up` as many times as needed to deploy code updates.
 
-**Redeploy one service:** Use `azd deploy api` or `azd deploy weather` to redeploy a specific app.
+**Redeploy one service:** Use `azd deploy tools`, `azd deploy resources`, `azd deploy prompts`, or `azd deploy weather` to redeploy a specific app.
 
 **Clean up:** Delete all Azure resources when done:
 
@@ -244,6 +262,15 @@ azd down
 ```
 
 ## Source Code
+
+The solution is organized into separate Azure Function projects by MCP capability:
+
+| Project | Path | Description |
+|---------|------|-------------|
+| **FunctionsMcpTool** | `src/FunctionsMcpTool/` | MCP Tools — snippet CRUD, QR code generation, badges, website preview |
+| **FunctionsMcpResources** | `src/FunctionsMcpResources/` | MCP Resources — snippet resource template, server info resource |
+| **FunctionsMcpPrompts** | `src/FunctionsMcpPrompts/` | MCP Prompts — code review checklist, summarize content, generate docs |
+| **McpWeatherApp** | `src/McpWeatherApp/` | Weather App — standalone MCP demo with interactive UI |
 
 The function code for the `GetSnippet` and `SaveSnippet` endpoints are defined in [`SnippetsTool.cs`](./src/FunctionsMcpTool/SnippetsTool.cs). The `McpToolsTrigger` attribute applied to the async `Run` method exposes the code function as an MCP Server.
 

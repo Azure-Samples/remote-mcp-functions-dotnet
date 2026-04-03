@@ -4,8 +4,16 @@ name: remote-mcp-functions-dotnet
 metadata:
   template: remote-mcp-functions-dotnet@1.0.1
 services:
-  api:
+  tools:
     project: ./src/FunctionsMcpTool/
+    language: dotnet
+    host: function
+  resources:
+    project: ./src/FunctionsMcpResources/
+    language: dotnet
+    host: function
+  prompts:
+    project: ./src/FunctionsMcpPrompts/
     language: dotnet
     host: function
   weather:

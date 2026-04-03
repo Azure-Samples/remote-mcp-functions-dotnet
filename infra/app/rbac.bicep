@@ -2,6 +2,8 @@ param storageAccountName string
 param appInsightsName string
 param managedIdentityPrincipalId string = '' // Principal ID for the API Managed Identity
 param weatherManagedIdentityPrincipalId string = '' // Principal ID for the Weather App Managed Identity
+param resourcesManagedIdentityPrincipalId string = '' // Principal ID for the Resources App Managed Identity
+param promptsManagedIdentityPrincipalId string = '' // Principal ID for the Prompts App Managed Identity
 param userIdentityPrincipalId string = '' // Principal ID for the User Identity
 param allowUserIdentityPrincipal bool = false // Flag to enable user identity role assignments
 param enableBlob bool = true
@@ -140,6 +142,68 @@ resource appInsightsRoleAssignment_Weather 'Microsoft.Authorization/roleAssignme
   properties: {
     roleDefinitionId: resourceId('Microsoft.Authorization/roleDefinitions', monitoringRoleDefinitionId)
     principalId: weatherManagedIdentityPrincipalId
+    principalType: 'ServicePrincipal'
+  }
+}
+
+// Resources App Role Assignments
+resource storageRoleAssignment_Resources 'Microsoft.Authorization/roleAssignments@2022-04-01' = if (enableBlob && !empty(resourcesManagedIdentityPrincipalId)) {
+  name: guid(storageAccount.id, resourcesManagedIdentityPrincipalId, storageRoleDefinitionId)
+  scope: storageAccount
+  properties: {
+    roleDefinitionId: resourceId('Microsoft.Authorization/roleDefinitions', storageRoleDefinitionId)
+    principalId: resourcesManagedIdentityPrincipalId
+    principalType: 'ServicePrincipal'
+  }
+}
+
+resource queueRoleAssignment_Resources 'Microsoft.Authorization/roleAssignments@2022-04-01' = if (enableQueue && !empty(resourcesManagedIdentityPrincipalId)) {
+  name: guid(storageAccount.id, resourcesManagedIdentityPrincipalId, queueRoleDefinitionId)
+  scope: storageAccount
+  properties: {
+    roleDefinitionId: resourceId('Microsoft.Authorization/roleDefinitions', queueRoleDefinitionId)
+    principalId: resourcesManagedIdentityPrincipalId
+    principalType: 'ServicePrincipal'
+  }
+}
+
+resource appInsightsRoleAssignment_Resources 'Microsoft.Authorization/roleAssignments@2022-04-01' = if (!empty(resourcesManagedIdentityPrincipalId)) {
+  name: guid(applicationInsights.id, resourcesManagedIdentityPrincipalId, monitoringRoleDefinitionId)
+  scope: applicationInsights
+  properties: {
+    roleDefinitionId: resourceId('Microsoft.Authorization/roleDefinitions', monitoringRoleDefinitionId)
+    principalId: resourcesManagedIdentityPrincipalId
+    principalType: 'ServicePrincipal'
+  }
+}
+
+// Prompts App Role Assignments
+resource storageRoleAssignment_Prompts 'Microsoft.Authorization/roleAssignments@2022-04-01' = if (enableBlob && !empty(promptsManagedIdentityPrincipalId)) {
+  name: guid(storageAccount.id, promptsManagedIdentityPrincipalId, storageRoleDefinitionId)
+  scope: storageAccount
+  properties: {
+    roleDefinitionId: resourceId('Microsoft.Authorization/roleDefinitions', storageRoleDefinitionId)
+    principalId: promptsManagedIdentityPrincipalId
+    principalType: 'ServicePrincipal'
+  }
+}
+
+resource queueRoleAssignment_Prompts 'Microsoft.Authorization/roleAssignments@2022-04-01' = if (enableQueue && !empty(promptsManagedIdentityPrincipalId)) {
+  name: guid(storageAccount.id, promptsManagedIdentityPrincipalId, queueRoleDefinitionId)
+  scope: storageAccount
+  properties: {
+    roleDefinitionId: resourceId('Microsoft.Authorization/roleDefinitions', queueRoleDefinitionId)
+    principalId: promptsManagedIdentityPrincipalId
+    principalType: 'ServicePrincipal'
+  }
+}
+
+resource appInsightsRoleAssignment_Prompts 'Microsoft.Authorization/roleAssignments@2022-04-01' = if (!empty(promptsManagedIdentityPrincipalId)) {
+  name: guid(applicationInsights.id, promptsManagedIdentityPrincipalId, monitoringRoleDefinitionId)
+  scope: applicationInsights
+  properties: {
+    roleDefinitionId: resourceId('Microsoft.Authorization/roleDefinitions', monitoringRoleDefinitionId)
+    principalId: promptsManagedIdentityPrincipalId
     principalType: 'ServicePrincipal'
   }
 }
