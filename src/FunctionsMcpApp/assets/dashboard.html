@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Snippet Dashboard</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #1e1e2e;
+            color: #cdd6f4;
+            padding: 1.5rem;
+        }
+        header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1.5rem;
+        }
+        h1 { color: #89b4fa; font-size: 1.25rem; }
+        .status {
+            display: inline-block;
+            width: 8px; height: 8px;
+            background: #a6e3a1;
+            border-radius: 50%;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+        .tile {
+            background: #313244;
+            border-radius: 8px;
+            padding: 1.25rem;
+            border-left: 3px solid #89b4fa;
+        }
+        .tile h3 { font-size: 0.85rem; color: #a6adc8; margin-bottom: 0.25rem; }
+        .tile .value { font-size: 1.5rem; font-weight: 700; color: #cdd6f4; }
+        #snippet-list {
+            margin-top: 1.5rem;
+            background: #313244;
+            border-radius: 8px;
+            padding: 1rem;
+        }
+        #snippet-list h2 { font-size: 1rem; color: #89b4fa; margin-bottom: 0.75rem; }
+        .snippet-item {
+            padding: 0.5rem 0;
+            border-bottom: 1px solid #45475a;
+            font-family: 'Cascadia Code', 'Fira Code', monospace;
+            font-size: 0.85rem;
+        }
+        .snippet-item:last-child { border-bottom: none; }
+        .empty { color: #6c7086; font-style: italic; }
+        button {
+            background: #89b4fa;
+            color: #1e1e2e;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            margin-top: 1rem;
+        }
+        button:hover { background: #74c7ec; }
+    </style>
+</head>
+<body>
+    <header>
+        <span class="status"></span>
+        <h1>Snippet Dashboard</h1>
+    </header>
+
+    <div class="grid">
+        <div class="tile">
+            <h3>App Status</h3>
+            <div class="value">Online</div>
+        </div>
+        <div class="tile">
+            <h3>Extension</h3>
+            <div class="value">v1.5.0</div>
+        </div>
+        <div class="tile">
+            <h3>Runtime</h3>
+            <div class="value" id="runtime">.NET 10</div>
+        </div>
+    </div>
+
+    <div id="snippet-list">
+        <h2>Recent Snippets</h2>
+        <div class="empty">Connect an MCP client to see snippets here.</div>
+    </div>
+
+    <button onclick="copyStatus()">Copy Status to Clipboard</button>
+
+    <script>
+        async function copyStatus() {
+            const text = `Snippet Dashboard — Status: Online, Runtime: .NET 10`;
+            try {
+                await navigator.clipboard.writeText(text);
+            } catch {
+                // Clipboard access may be restricted by CSP
+            }
+        }
+    </script>
+</body>
+</html>
