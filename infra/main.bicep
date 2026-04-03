@@ -58,12 +58,12 @@ param delegatedPermissions array = ['User.Read']
 param location string
 param vnetEnabled bool
 
-@description('Which service to deploy: api or weather. Only one function app is provisioned per Flex Consumption plan.')
-@allowed(['api', 'weather'])
-param deployService string = 'api'
+@description('Which service to deploy. Only one function app is provisioned per deployment.')
+@allowed(['tools', 'weather', 'resources', 'prompts'])
+param deployService string = 'tools'
 
-param apiServiceName string = ''
-param apiUserAssignedIdentityName string = ''
+param toolsServiceName string = ''
+param toolsUserAssignedIdentityName string = ''
 param applicationInsightsName string = ''
 param appServicePlanName string = ''
 param logAnalyticsName string = ''
@@ -71,18 +71,26 @@ param resourceGroupName string = ''
 param storageAccountName string = ''
 param vNetName string = ''
 param weatherServiceName string = ''
+param resourcesServiceName string = ''
+param promptsServiceName string = ''
 @description('Id of the user identity to be used for testing and debugging. This is not required in production. Leave empty if not needed.')
 param principalId string = deployer().objectId
 
 var abbrs = loadJsonContent('./abbreviations.json')
 var resourceToken = toLower(uniqueString(subscription().id, environmentName, location))
 var tags = { 'azd-env-name': environmentName }
-var deployApi = deployService == 'api'
+var deployTools = deployService == 'tools'
 var deployWeather = deployService == 'weather'
-var functionAppName = !empty(apiServiceName) ? apiServiceName : '${abbrs.webSitesFunctions}api-${resourceToken}'
+var deployResources = deployService == 'resources'
+var deployPrompts = deployService == 'prompts'
+var toolsFunctionAppName = !empty(toolsServiceName) ? toolsServiceName : '${abbrs.webSitesFunctions}tools-${resourceToken}'
 var weatherFunctionAppName = !empty(weatherServiceName) ? weatherServiceName : '${abbrs.webSitesFunctions}weather-${resourceToken}'
-var deploymentStorageContainerName = 'app-package-${take(functionAppName, 32)}-${take(toLower(uniqueString(functionAppName, resourceToken)), 7)}'
+var resourcesFunctionAppName = !empty(resourcesServiceName) ? resourcesServiceName : '${abbrs.webSitesFunctions}resources-${resourceToken}'
+var promptsFunctionAppName = !empty(promptsServiceName) ? promptsServiceName : '${abbrs.webSitesFunctions}prompts-${resourceToken}'
+var toolsDeploymentStorageContainerName = 'app-package-${take(toolsFunctionAppName, 32)}-${take(toLower(uniqueString(toolsFunctionAppName, resourceToken)), 7)}'
 var weatherDeploymentStorageContainerName = 'app-package-${take(weatherFunctionAppName, 32)}-${take(toLower(uniqueString(weatherFunctionAppName, resourceToken)), 7)}'
+var resourcesDeploymentStorageContainerName = 'app-package-${take(resourcesFunctionAppName, 32)}-${take(toLower(uniqueString(resourcesFunctionAppName, resourceToken)), 7)}'
+var promptsDeploymentStorageContainerName = 'app-package-${take(promptsFunctionAppName, 32)}-${take(toLower(uniqueString(promptsFunctionAppName, resourceToken)), 7)}'
 
 // Convert comma-separated string to array for pre-authorized client IDs
 var preAuthorizedClientIdsArray = !empty(preAuthorizedClientIds) ? map(split(preAuthorizedClientIds, ','), clientId => trim(clientId)) : []
@@ -96,13 +104,13 @@ resource rg 'Microsoft.Resources/resourceGroups@2021-04-01' = {
 
 // User assigned managed identity to be used by the function app to reach storage and other dependencies
 // Assign specific roles to this identity in the RBAC module
-module apiUserAssignedIdentity 'br/public:avm/res/managed-identity/user-assigned-identity:0.4.1' = if (deployApi) {
-  name: 'apiUserAssignedIdentity'
+module toolsUserAssignedIdentity 'br/public:avm/res/managed-identity/user-assigned-identity:0.4.1' = if (deployTools) {
+  name: 'toolsUserAssignedIdentity'
   scope: rg
   params: {
     location: location
     tags: tags
-    name: !empty(apiUserAssignedIdentityName) ? apiUserAssignedIdentityName : '${abbrs.managedIdentityUserAssignedIdentities}api-${resourceToken}'
+    name: !empty(toolsUserAssignedIdentityName) ? toolsUserAssignedIdentityName : '${abbrs.managedIdentityUserAssignedIdentities}tools-${resourceToken}'
   }
 }
 
@@ -114,6 +122,28 @@ module weatherUserAssignedIdentity 'br/public:avm/res/managed-identity/user-assi
     location: location
     tags: tags
     name: '${abbrs.managedIdentityUserAssignedIdentities}weather-${resourceToken}'
+  }
+}
+
+// User assigned managed identity for the resources function app
+module resourcesUserAssignedIdentity 'br/public:avm/res/managed-identity/user-assigned-identity:0.4.1' = if (deployResources) {
+  name: 'resourcesUserAssignedIdentity'
+  scope: rg
+  params: {
+    location: location
+    tags: tags
+    name: '${abbrs.managedIdentityUserAssignedIdentities}resources-${resourceToken}'
+  }
+}
+
+// User assigned managed identity for the prompts function app
+module promptsUserAssignedIdentity 'br/public:avm/res/managed-identity/user-assigned-identity:0.4.1' = if (deployPrompts) {
+  name: 'promptsUserAssignedIdentity'
+  scope: rg
+  params: {
+    location: location
+    tags: tags
+    name: '${abbrs.managedIdentityUserAssignedIdentities}prompts-${resourceToken}'
   }
 }
 
@@ -133,11 +163,12 @@ module appServicePlan 'br/public:avm/res/web/serverfarm:0.1.1' = {
   }
 }
 
-module api './app/api.bicep' = if (deployApi) {
-  name: 'api'
+module tools './app/api.bicep' = if (deployTools) {
+  name: 'tools'
   scope: rg
   params: {
-    name: functionAppName
+    name: toolsFunctionAppName
+    serviceName: 'tools'
     location: location
     tags: tags
     applicationInsightsName: monitoring.outputs.name
@@ -148,9 +179,9 @@ module api './app/api.bicep' = if (deployApi) {
     enableBlob: storageEndpointConfig.enableBlob
     enableQueue: storageEndpointConfig.enableQueue
     enableTable: storageEndpointConfig.enableTable
-    deploymentStorageContainerName: deploymentStorageContainerName
-    identityId: apiUserAssignedIdentity!.outputs.resourceId
-    identityClientId: apiUserAssignedIdentity!.outputs.clientId
+    deploymentStorageContainerName: toolsDeploymentStorageContainerName
+    identityId: toolsUserAssignedIdentity!.outputs.resourceId
+    identityClientId: toolsUserAssignedIdentity!.outputs.clientId
     preAuthorizedClientIds: preAuthorizedClientIdsArray
     appSettings: {
     }
@@ -165,17 +196,17 @@ module api './app/api.bicep' = if (deployApi) {
 }
 
 // Entra ID application registration for MCP authentication (with predictable hostname)
-module entraApp 'app/entra.bicep' = if (deployApi) {
+module entraApp 'app/entra.bicep' = if (deployTools) {
   name: 'entraApp'
   scope: rg
   params: {
-    appUniqueName: '${functionAppName}-app'
-    appDisplayName: 'MCP Authorization App (${functionAppName})'
+    appUniqueName: '${toolsFunctionAppName}-app'
+    appDisplayName: 'MCP Authorization App (${toolsFunctionAppName})'
     serviceManagementReference: serviceManagementReference
-    functionAppHostname: '${functionAppName}.azurewebsites.net'
+    functionAppHostname: '${toolsFunctionAppName}.azurewebsites.net'
     preAuthorizedClientIds: preAuthorizedClientIdsArray
-    managedIdentityClientId: apiUserAssignedIdentity!.outputs.clientId
-    managedIdentityPrincipalId: apiUserAssignedIdentity!.outputs.principalId
+    managedIdentityClientId: toolsUserAssignedIdentity!.outputs.clientId
+    managedIdentityPrincipalId: toolsUserAssignedIdentity!.outputs.principalId
     tags: tags
   }
 }
@@ -205,6 +236,56 @@ module weather './app/api.bicep' = if (deployWeather) {
   }
 }
 
+// Resources App - MCP resource templates
+module resources './app/api.bicep' = if (deployResources) {
+  name: 'resources'
+  scope: rg
+  params: {
+    name: resourcesFunctionAppName
+    serviceName: 'resources'
+    location: location
+    tags: tags
+    applicationInsightsName: monitoring.outputs.name
+    appServicePlanId: appServicePlan.outputs.resourceId
+    runtimeName: 'dotnet-isolated'
+    runtimeVersion: '10.0'
+    storageAccountName: storage.outputs.name
+    enableBlob: storageEndpointConfig.enableBlob
+    enableQueue: storageEndpointConfig.enableQueue
+    enableTable: storageEndpointConfig.enableTable
+    deploymentStorageContainerName: resourcesDeploymentStorageContainerName
+    identityId: resourcesUserAssignedIdentity!.outputs.resourceId
+    identityClientId: resourcesUserAssignedIdentity!.outputs.clientId
+    appSettings: {}
+    virtualNetworkSubnetResourceId: vnetEnabled ? serviceVirtualNetwork!.outputs.appSubnetID : ''
+  }
+}
+
+// Prompts App - MCP prompt templates
+module prompts './app/api.bicep' = if (deployPrompts) {
+  name: 'prompts'
+  scope: rg
+  params: {
+    name: promptsFunctionAppName
+    serviceName: 'prompts'
+    location: location
+    tags: tags
+    applicationInsightsName: monitoring.outputs.name
+    appServicePlanId: appServicePlan.outputs.resourceId
+    runtimeName: 'dotnet-isolated'
+    runtimeVersion: '10.0'
+    storageAccountName: storage.outputs.name
+    enableBlob: storageEndpointConfig.enableBlob
+    enableQueue: storageEndpointConfig.enableQueue
+    enableTable: storageEndpointConfig.enableTable
+    deploymentStorageContainerName: promptsDeploymentStorageContainerName
+    identityId: promptsUserAssignedIdentity!.outputs.resourceId
+    identityClientId: promptsUserAssignedIdentity!.outputs.clientId
+    appSettings: {}
+    virtualNetworkSubnetResourceId: vnetEnabled ? serviceVirtualNetwork!.outputs.appSubnetID : ''
+  }
+}
+
 // Backing storage for Azure functions backend API
 module storage 'br/public:avm/res/storage/storage-account:0.8.3' = {
   name: 'storage'
@@ -223,10 +304,14 @@ module storage 'br/public:avm/res/storage/storage-account:0.8.3' = {
       bypass: 'AzureServices'
     }
     blobServices: {
-      containers: deployApi ? [
-        {name: deploymentStorageContainerName}
-      ] : [
+      containers: deployTools ? [
+        {name: toolsDeploymentStorageContainerName}
+      ] : deployWeather ? [
         {name: weatherDeploymentStorageContainerName}
+      ] : deployResources ? [
+        {name: resourcesDeploymentStorageContainerName}
+      ] : [
+        {name: promptsDeploymentStorageContainerName}
       ]
     }
     minimumTlsVersion: 'TLS1_2'  // Enforcing TLS 1.2 for better security
@@ -252,8 +337,10 @@ module rbac 'app/rbac.bicep' = {
   params: {
     storageAccountName: storage.outputs.name
     appInsightsName: monitoring.outputs.name
-    managedIdentityPrincipalId: deployApi ? apiUserAssignedIdentity!.outputs.principalId : ''
+    managedIdentityPrincipalId: deployTools ? toolsUserAssignedIdentity!.outputs.principalId : ''
     weatherManagedIdentityPrincipalId: deployWeather ? weatherUserAssignedIdentity!.outputs.principalId : ''
+    resourcesManagedIdentityPrincipalId: deployResources ? resourcesUserAssignedIdentity!.outputs.principalId : ''
+    promptsManagedIdentityPrincipalId: deployPrompts ? promptsUserAssignedIdentity!.outputs.principalId : ''
     userIdentityPrincipalId: principalId
     enableBlob: storageEndpointConfig.enableBlob
     enableQueue: storageEndpointConfig.enableQueue
@@ -316,27 +403,35 @@ module monitoring 'br/public:avm/res/insights/component:0.6.0' = {
 output APPLICATIONINSIGHTS_CONNECTION_STRING string = monitoring.outputs.connectionString
 output AZURE_LOCATION string = location
 output AZURE_TENANT_ID string = tenant().tenantId
-output SERVICE_API_NAME string = deployApi ? api!.outputs.SERVICE_API_NAME : ''
-output SERVICE_API_DEFAULT_HOSTNAME string = deployApi ? api!.outputs.SERVICE_MCP_DEFAULT_HOSTNAME : ''
-output AZURE_FUNCTION_NAME string = deployApi ? api!.outputs.SERVICE_API_NAME : ''
+output SERVICE_TOOLS_NAME string = deployTools ? tools!.outputs.SERVICE_API_NAME : ''
+output SERVICE_TOOLS_DEFAULT_HOSTNAME string = deployTools ? tools!.outputs.SERVICE_MCP_DEFAULT_HOSTNAME : ''
+output AZURE_FUNCTION_NAME string = deployTools ? tools!.outputs.SERVICE_API_NAME : ''
 
 // Entra App outputs (using the initial app for core properties)
-output ENTRA_APPLICATION_ID string = deployApi ? entraApp!.outputs.applicationId : ''
-output ENTRA_APPLICATION_OBJECT_ID string = deployApi ? entraApp!.outputs.applicationObjectId : ''
-output ENTRA_SERVICE_PRINCIPAL_ID string = deployApi ? entraApp!.outputs.servicePrincipalId : ''
-output ENTRA_IDENTIFIER_URI string = deployApi ? entraApp!.outputs.identifierUri : ''
+output ENTRA_APPLICATION_ID string = deployTools ? entraApp!.outputs.applicationId : ''
+output ENTRA_APPLICATION_OBJECT_ID string = deployTools ? entraApp!.outputs.applicationObjectId : ''
+output ENTRA_SERVICE_PRINCIPAL_ID string = deployTools ? entraApp!.outputs.servicePrincipalId : ''
+output ENTRA_IDENTIFIER_URI string = deployTools ? entraApp!.outputs.identifierUri : ''
 
 // Authorization outputs
-output AUTH_ENABLED bool = deployApi ? api!.outputs.AUTH_ENABLED : false
-output CONFIGURED_SCOPES string = deployApi ? api!.outputs.CONFIGURED_SCOPES : ''
+output AUTH_ENABLED bool = deployTools ? tools!.outputs.AUTH_ENABLED : false
+output CONFIGURED_SCOPES string = deployTools ? tools!.outputs.CONFIGURED_SCOPES : ''
 
 // Pre-authorized applications
 output PRE_AUTHORIZED_CLIENT_IDS string = preAuthorizedClientIds
 
 // Entra App redirect URI outputs (using predictable hostname)
-output CONFIGURED_REDIRECT_URIS array = deployApi ? entraApp!.outputs.configuredRedirectUris : []
-output AUTH_REDIRECT_URI string = deployApi ? entraApp!.outputs.authRedirectUri : ''
+output CONFIGURED_REDIRECT_URIS array = deployTools ? entraApp!.outputs.configuredRedirectUris : []
+output AUTH_REDIRECT_URI string = deployTools ? entraApp!.outputs.authRedirectUri : ''
 
 // Weather App outputs
 output SERVICE_WEATHER_NAME string = deployWeather ? weather!.outputs.SERVICE_API_NAME : ''
 output SERVICE_WEATHER_DEFAULT_HOSTNAME string = deployWeather ? weather!.outputs.SERVICE_MCP_DEFAULT_HOSTNAME : ''
+
+// Resources App outputs
+output SERVICE_RESOURCES_NAME string = deployResources ? resources!.outputs.SERVICE_API_NAME : ''
+output SERVICE_RESOURCES_DEFAULT_HOSTNAME string = deployResources ? resources!.outputs.SERVICE_MCP_DEFAULT_HOSTNAME : ''
+
+// Prompts App outputs
+output SERVICE_PROMPTS_NAME string = deployPrompts ? prompts!.outputs.SERVICE_API_NAME : ''
+output SERVICE_PROMPTS_DEFAULT_HOSTNAME string = deployPrompts ? prompts!.outputs.SERVICE_MCP_DEFAULT_HOSTNAME : ''

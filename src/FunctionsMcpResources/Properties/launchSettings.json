@@ -1,0 +1,14 @@
+{
+  "profiles": {
+    "FunctionsMcpResources": {
+      "commandName": "Executable",
+      "executablePath": "func",
+      "commandLineArgs": "start --port 7072",
+      "workingDirectory": "$(ProjectDir)",
+      "launchBrowser": false,
+      "environmentVariables": {
+        "AZURE_FUNCTIONS_ENVIRONMENT": "Development"
+      }
+    }
+  }
+}

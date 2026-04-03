@@ -1,9 +1,9 @@
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Extensions.Mcp;
 using Microsoft.Extensions.Logging;
-using static FunctionsMcpTool.ToolsInformation;
+using static FunctionsMcpPrompts.PromptsInformation;
 
-namespace FunctionsMcpTool;
+namespace FunctionsMcpPrompts;
 
 public class PromptSamples(ILogger<PromptSamples> logger)
 {
