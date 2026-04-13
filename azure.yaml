@@ -20,3 +20,7 @@ services:
     project: ./src/McpWeatherApp/
     language: dotnet
     host: function
+  apps:
+    project: ./src/FunctionsMcpApp/
+    language: dotnet
+    host: function

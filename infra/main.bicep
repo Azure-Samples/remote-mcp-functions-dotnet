@@ -59,7 +59,7 @@ param location string
 param vnetEnabled bool
 
 @description('Which service to deploy. Only one function app is provisioned per deployment.')
-@allowed(['tools', 'weather', 'resources', 'prompts'])
+@allowed(['tools', 'weather', 'resources', 'prompts', 'apps'])
 param deployService string = 'tools'
 
 param toolsServiceName string = ''
@@ -73,6 +73,7 @@ param vNetName string = ''
 param weatherServiceName string = ''
 param resourcesServiceName string = ''
 param promptsServiceName string = ''
+param appsServiceName string = ''
 @description('Id of the user identity to be used for testing and debugging. This is not required in production. Leave empty if not needed.')
 param principalId string = deployer().objectId
 
@@ -83,14 +84,17 @@ var deployTools = deployService == 'tools'
 var deployWeather = deployService == 'weather'
 var deployResources = deployService == 'resources'
 var deployPrompts = deployService == 'prompts'
+var deployApps = deployService == 'apps'
 var toolsFunctionAppName = !empty(toolsServiceName) ? toolsServiceName : '${abbrs.webSitesFunctions}tools-${resourceToken}'
 var weatherFunctionAppName = !empty(weatherServiceName) ? weatherServiceName : '${abbrs.webSitesFunctions}weather-${resourceToken}'
 var resourcesFunctionAppName = !empty(resourcesServiceName) ? resourcesServiceName : '${abbrs.webSitesFunctions}resources-${resourceToken}'
 var promptsFunctionAppName = !empty(promptsServiceName) ? promptsServiceName : '${abbrs.webSitesFunctions}prompts-${resourceToken}'
+var appsFunctionAppName = !empty(appsServiceName) ? appsServiceName : '${abbrs.webSitesFunctions}apps-${resourceToken}'
 var toolsDeploymentStorageContainerName = 'app-package-${take(toolsFunctionAppName, 32)}-${take(toLower(uniqueString(toolsFunctionAppName, resourceToken)), 7)}'
 var weatherDeploymentStorageContainerName = 'app-package-${take(weatherFunctionAppName, 32)}-${take(toLower(uniqueString(weatherFunctionAppName, resourceToken)), 7)}'
 var resourcesDeploymentStorageContainerName = 'app-package-${take(resourcesFunctionAppName, 32)}-${take(toLower(uniqueString(resourcesFunctionAppName, resourceToken)), 7)}'
 var promptsDeploymentStorageContainerName = 'app-package-${take(promptsFunctionAppName, 32)}-${take(toLower(uniqueString(promptsFunctionAppName, resourceToken)), 7)}'
+var appsDeploymentStorageContainerName = 'app-package-${take(appsFunctionAppName, 32)}-${take(toLower(uniqueString(appsFunctionAppName, resourceToken)), 7)}'
 
 // Convert comma-separated string to array for pre-authorized client IDs
 var preAuthorizedClientIdsArray = !empty(preAuthorizedClientIds) ? map(split(preAuthorizedClientIds, ','), clientId => trim(clientId)) : []
@@ -144,6 +148,17 @@ module promptsUserAssignedIdentity 'br/public:avm/res/managed-identity/user-assi
     location: location
     tags: tags
     name: '${abbrs.managedIdentityUserAssignedIdentities}prompts-${resourceToken}'
+  }
+}
+
+// User assigned managed identity for the apps function app
+module appsUserAssignedIdentity 'br/public:avm/res/managed-identity/user-assigned-identity:0.4.1' = if (deployApps) {
+  name: 'appsUserAssignedIdentity'
+  scope: rg
+  params: {
+    location: location
+    tags: tags
+    name: '${abbrs.managedIdentityUserAssignedIdentities}apps-${resourceToken}'
   }
 }
 
@@ -286,6 +301,31 @@ module prompts './app/api.bicep' = if (deployPrompts) {
   }
 }
 
+// Apps - MCP Apps with Fluent API (dynamic dashboard)
+module apps './app/api.bicep' = if (deployApps) {
+  name: 'apps'
+  scope: rg
+  params: {
+    name: appsFunctionAppName
+    serviceName: 'apps'
+    location: location
+    tags: tags
+    applicationInsightsName: monitoring.outputs.name
+    appServicePlanId: appServicePlan.outputs.resourceId
+    runtimeName: 'dotnet-isolated'
+    runtimeVersion: '10.0'
+    storageAccountName: storage.outputs.name
+    enableBlob: storageEndpointConfig.enableBlob
+    enableQueue: storageEndpointConfig.enableQueue
+    enableTable: storageEndpointConfig.enableTable
+    deploymentStorageContainerName: appsDeploymentStorageContainerName
+    identityId: appsUserAssignedIdentity!.outputs.resourceId
+    identityClientId: appsUserAssignedIdentity!.outputs.clientId
+    appSettings: {}
+    virtualNetworkSubnetResourceId: vnetEnabled ? serviceVirtualNetwork!.outputs.appSubnetID : ''
+  }
+}
+
 // Backing storage for Azure functions backend API
 module storage 'br/public:avm/res/storage/storage-account:0.8.3' = {
   name: 'storage'
@@ -310,6 +350,8 @@ module storage 'br/public:avm/res/storage/storage-account:0.8.3' = {
         {name: weatherDeploymentStorageContainerName}
       ] : deployResources ? [
         {name: resourcesDeploymentStorageContainerName}
+      ] : deployApps ? [
+        {name: appsDeploymentStorageContainerName}
       ] : [
         {name: promptsDeploymentStorageContainerName}
       ]
@@ -341,6 +383,7 @@ module rbac 'app/rbac.bicep' = {
     weatherManagedIdentityPrincipalId: deployWeather ? weatherUserAssignedIdentity!.outputs.principalId : ''
     resourcesManagedIdentityPrincipalId: deployResources ? resourcesUserAssignedIdentity!.outputs.principalId : ''
     promptsManagedIdentityPrincipalId: deployPrompts ? promptsUserAssignedIdentity!.outputs.principalId : ''
+    appsManagedIdentityPrincipalId: deployApps ? appsUserAssignedIdentity!.outputs.principalId : ''
     userIdentityPrincipalId: principalId
     enableBlob: storageEndpointConfig.enableBlob
     enableQueue: storageEndpointConfig.enableQueue
@@ -435,3 +478,7 @@ output SERVICE_RESOURCES_DEFAULT_HOSTNAME string = deployResources ? resources!.
 // Prompts App outputs
 output SERVICE_PROMPTS_NAME string = deployPrompts ? prompts!.outputs.SERVICE_API_NAME : ''
 output SERVICE_PROMPTS_DEFAULT_HOSTNAME string = deployPrompts ? prompts!.outputs.SERVICE_MCP_DEFAULT_HOSTNAME : ''
+
+// Apps (Fluent API) outputs
+output SERVICE_APPS_NAME string = deployApps ? apps!.outputs.SERVICE_API_NAME : ''
+output SERVICE_APPS_DEFAULT_HOSTNAME string = deployApps ? apps!.outputs.SERVICE_MCP_DEFAULT_HOSTNAME : ''

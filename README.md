@@ -33,7 +33,7 @@ If you're looking for this sample in more languages check out the [Node.js/TypeS
 ### Required for all development approaches
 
 + [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0)
-+ [Azure Functions Core Tools](https://learn.microsoft.com/azure/azure-functions/functions-run-local?pivots=programming-language-csharp#install-the-azure-functions-core-tools) >= `4.0.7030`
++ [Azure Functions Core Tools](https://learn.microsoft.com/azure/azure-functions/functions-run-local?pivots=programming-language-csharp#install-the-azure-functions-core-tools) >= `4.5.0`
 + [Azure Developer CLI](https://aka.ms/azd) **1.23.x or above** (for deployment)
 
 ### For Visual Studio development
@@ -183,6 +183,29 @@ This repository also includes a Weather App sample that demonstrates MCP tools w
 
 1. Ask Copilot: "What's the weather in Seattle?"
 
+### Fluent API MCP App (Dynamic Dashboard)
+
+The FunctionsMcpApp sample shows how to render **dynamic data** with the fluent API. The dashboard UI is a Vite-bundled TypeScript app that receives tool results via `@modelcontextprotocol/ext-apps` and renders tiles, charts, and status indicators in real time. See [src/FunctionsMcpApp/README.md](src/FunctionsMcpApp/README.md) for details.
+
+1. Build the dashboard UI:
+
+    ```shell
+    cd src/FunctionsMcpApp/app
+    npm install
+    npm run build
+    cd ..
+    ```
+
+1. Run the function app:
+
+    ```shell
+    func start
+    ```
+
+1. In **.vscode/mcp.json**, click **Start** above *local-mcp-function*
+
+1. Ask Copilot to open the Snippet Dashboard
+
 ## Deploy to Azure
 
 Stop the local server with `Ctrl+C` and switch back to the root directory.
@@ -216,7 +239,7 @@ azd env set VNET_ENABLED true
 
 1. Set `DEPLOY_SERVICE` to provision one of the MCP server projects: 
     ```shell
-    azd env set DEPLOY_SERVICE <tools, resources, prompts, or weather> 
+    azd env set DEPLOY_SERVICE <tools, resources, prompts, weather, or apps> 
     ```
 
 1. Provision the resources for the app: 
@@ -240,6 +263,9 @@ azd env set VNET_ENABLED true
 
     # Deploy only the Weather App (with access token)
     azd deploy --service weather
+
+    # Deploy only the Fluent API App (dynamic dashboard)
+    azd deploy --service apps
     ```
 
 ### Step 4: Connect to the remote MCP server
@@ -253,7 +279,7 @@ After deployment finishes, open **.vscode/mcp.json** and click **Start** above *
 
 **Redeploy all:** Run `azd up` as many times as needed to deploy code updates.
 
-**Redeploy one service:** Use `azd deploy tools`, `azd deploy resources`, `azd deploy prompts`, or `azd deploy weather` to redeploy a specific app.
+**Redeploy one service:** Use `azd deploy tools`, `azd deploy resources`, `azd deploy prompts`, `azd deploy weather`, or `azd deploy apps` to redeploy a specific app.
 
 **Clean up:** Delete all Azure resources when done:
 
@@ -270,6 +296,7 @@ The solution is organized into separate Azure Function projects by MCP capabilit
 | **FunctionsMcpTool** | `src/FunctionsMcpTool/` | MCP Tools — snippet CRUD, QR code generation, badges, website preview |
 | **FunctionsMcpResources** | `src/FunctionsMcpResources/` | MCP Resources — snippet resource template, server info resource |
 | **FunctionsMcpPrompts** | `src/FunctionsMcpPrompts/` | MCP Prompts — code review checklist, summarize content, generate docs |
+| **FunctionsMcpApp** | `src/FunctionsMcpApp/` | MCP Apps (Fluent API) — dynamic dashboard with Vite UI, static hello app |
 | **McpWeatherApp** | `src/McpWeatherApp/` | Weather App — standalone MCP demo with interactive UI |
 
 The function code for the `GetSnippet` and `SaveSnippet` endpoints are defined in [`SnippetsTool.cs`](./src/FunctionsMcpTool/SnippetsTool.cs). The `McpToolsTrigger` attribute applied to the async `Run` method exposes the code function as an MCP Server.

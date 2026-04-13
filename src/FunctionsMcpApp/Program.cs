@@ -21,10 +21,11 @@ builder.ConfigureMcpTool("HelloApp")
         .WithBorder());
 
 // ─── MCP App: SnippetDashboard ─────────────────────────────────────
-// Full-featured app demonstrating CSP, permissions, static assets, and visibility.
+// Dynamic dashboard built with Vite + @modelcontextprotocol/ext-apps SDK.
+// The bundled HTML receives tool results via ontoolresult and renders live data.
 builder.ConfigureMcpTool("SnippetDashboard")
     .AsMcpApp(app => app
-        .WithView("assets/dashboard.html")
+        .WithView("app/dist/index.html")
         .WithTitle("Snippet Dashboard")
         .WithPermissions(McpAppPermissions.ClipboardWrite | McpAppPermissions.ClipboardRead)
         .WithCsp(csp =>
@@ -33,7 +34,7 @@ builder.ConfigureMcpTool("SnippetDashboard")
                .LoadResourcesFrom("https://cdn.example.com");
         })
         .ConfigureApp()
-        .WithStaticAssets("assets")
+        .WithStaticAssets("app/dist")
         .WithVisibility(McpVisibility.Model | McpVisibility.App));
 
 builder.Build().Run();
