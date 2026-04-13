@@ -4,6 +4,7 @@ param managedIdentityPrincipalId string = '' // Principal ID for the API Managed
 param weatherManagedIdentityPrincipalId string = '' // Principal ID for the Weather App Managed Identity
 param resourcesManagedIdentityPrincipalId string = '' // Principal ID for the Resources App Managed Identity
 param promptsManagedIdentityPrincipalId string = '' // Principal ID for the Prompts App Managed Identity
+param appsManagedIdentityPrincipalId string = '' // Principal ID for the Apps Managed Identity
 param userIdentityPrincipalId string = '' // Principal ID for the User Identity
 param allowUserIdentityPrincipal bool = false // Flag to enable user identity role assignments
 param enableBlob bool = true
@@ -204,6 +205,37 @@ resource appInsightsRoleAssignment_Prompts 'Microsoft.Authorization/roleAssignme
   properties: {
     roleDefinitionId: resourceId('Microsoft.Authorization/roleDefinitions', monitoringRoleDefinitionId)
     principalId: promptsManagedIdentityPrincipalId
+    principalType: 'ServicePrincipal'
+  }
+}
+
+// Apps Role Assignments
+resource storageRoleAssignment_Apps 'Microsoft.Authorization/roleAssignments@2022-04-01' = if (enableBlob && !empty(appsManagedIdentityPrincipalId)) {
+  name: guid(storageAccount.id, appsManagedIdentityPrincipalId, storageRoleDefinitionId)
+  scope: storageAccount
+  properties: {
+    roleDefinitionId: resourceId('Microsoft.Authorization/roleDefinitions', storageRoleDefinitionId)
+    principalId: appsManagedIdentityPrincipalId
+    principalType: 'ServicePrincipal'
+  }
+}
+
+resource queueRoleAssignment_Apps 'Microsoft.Authorization/roleAssignments@2022-04-01' = if (enableQueue && !empty(appsManagedIdentityPrincipalId)) {
+  name: guid(storageAccount.id, appsManagedIdentityPrincipalId, queueRoleDefinitionId)
+  scope: storageAccount
+  properties: {
+    roleDefinitionId: resourceId('Microsoft.Authorization/roleDefinitions', queueRoleDefinitionId)
+    principalId: appsManagedIdentityPrincipalId
+    principalType: 'ServicePrincipal'
+  }
+}
+
+resource appInsightsRoleAssignment_Apps 'Microsoft.Authorization/roleAssignments@2022-04-01' = if (!empty(appsManagedIdentityPrincipalId)) {
+  name: guid(applicationInsights.id, appsManagedIdentityPrincipalId, monitoringRoleDefinitionId)
+  scope: applicationInsights
+  properties: {
+    roleDefinitionId: resourceId('Microsoft.Authorization/roleDefinitions', monitoringRoleDefinitionId)
+    principalId: appsManagedIdentityPrincipalId
     principalType: 'ServicePrincipal'
   }
 }
