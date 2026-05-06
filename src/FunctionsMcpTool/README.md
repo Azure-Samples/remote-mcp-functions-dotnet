@@ -86,28 +86,28 @@ azd auth login
 azd env new <environment-name>
 ```
 
-Configure VS Code as an allowed client application for Microsoft Entra authentication:
+This also becomes the resource group name.
+
+### Step 3: Provision and deploy
+
+This project requires OAuth-based authentication through the [built-in MCP auth feature](https://learn.microsoft.com/azure/app-service/configure-authentication-mcp?toc=/azure/azure-functions/toc.json&bc=/azure/azure-functions/breadcrumb/toc.json) with Microsoft Entra as the identity provider, and it is enabled by default. Do not disable authentication for this project.
+
+Configure VS Code as an allowed client application for Microsoft Entra:
 
 ```shell
 azd env set PRE_AUTHORIZED_CLIENT_IDS aebc6443-996d-45c2-90f0-388ff96faa56
 ```
 
-Set the deployment service to `tools` (this project):
+Optionally enable VNet isolation:
 
 ```shell
-azd env set DEPLOY_SERVICE tools
+azd env set VNET_ENABLED true
 ```
 
-### Step 3: Provision and deploy
+Deploy the project. When prompted, pick your subscription and an Azure region.
 
 ```shell
-azd provision
-```
-
-When prompted, pick your subscription and an Azure region.
-
-```shell
-azd deploy --service tools
+azd up
 ```
 
 ### Step 4: Consent to the application
@@ -128,9 +128,11 @@ Open **`.vscode/mcp.json`** and click **Start** above **`remote-functions-mcp-to
 
 > **Tip:** A successful connection shows the number of tools the server exposes. Click **More... → Show Output** above the server name to see request/response details.
 
+> If you run into issues, see the [Troubleshooting](#troubleshooting) section below.
+
 ## Redeploy and clean up
 
-- **Redeploy:** `azd deploy --service tools`
+- **Redeploy:** `azd deploy`
 - **Clean up all resources:** `azd down`
 
 ## Examining the code
@@ -253,3 +255,13 @@ See [Overview of permissions and consent in the Microsoft identity platform](htt
 | API version not supported by Azurite | Pull the latest image (`docker pull mcr.microsoft.com/azure-storage/azurite`) and restart |
 | `hello_tool_with_auth` fails locally | Ensure you're signed in with `az login` or the VS Code Azure account extension |
 | OBO errors in production | Verify that consent has been granted (see Step 4) and that the Entra app registration is configured correctly |
+| `An error occurred invoking 'hello_tool_with_auth'` | The `hello_tool_with_auth` tool uses the On-Behalf-Of (OBO) flow, which exchanges the user's token for a Microsoft Graph token via a federated identity credential (FIC) on the app registration. This error typically means the FIC's signing key is out of sync. Delete the FIC and recreate it: `az ad app federated-credential delete --id <app-id> --federated-credential-id <credential-name>` then `az ad app federated-credential create --id <app-id> --parameters '{...}'`. Check **Application Insights > Logs** for the underlying error (e.g. `AADSTS50013: Assertion failed signature validation`). |
+| Generic "An error occurred invoking" with no details | Check **Application Insights > Logs** and query `exceptions \| where timestamp > ago(1h) \| project timestamp, outerMessage, innermostMessage` to find the actual error. |
+| `azd up` provision succeeded but deploy immediately failed: `unable to find a resource tagged with 'azd-service-name: mcp'` | The tag was provisioned but not propagated yet when `azd deploy` looked it up — run `azd deploy` again |
+| `azd deploy` fails with Kudu restart error: `deployment was partially successful: [KuduSpecializer] Kudu has been restarted after package deployed` | Transient error — run `azd deploy` again |
+
+## Next Steps
+
++ Learn more about the [Azure Functions MCP extension](https://learn.microsoft.com/azure/azure-functions/functions-bindings-mcp?pivots=programming-language-typescript)
++ Connect your MCP server to [Foundry agents](https://learn.microsoft.com/azure/azure-functions/functions-mcp-foundry-tools?tabs=oauth-id%2Cmcp-extension%2Cfoundry)
++ Add [API Management](https://github.com/Azure-Samples/remote-mcp-apim-functions-python) to your MCP server
