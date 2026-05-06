@@ -98,6 +98,17 @@ module userAssignedIdentity 'br/public:avm/res/managed-identity/user-assigned-id
   }
 }
 
+// User assigned managed identity for the apps function app
+module appsUserAssignedIdentity 'br/public:avm/res/managed-identity/user-assigned-identity:0.4.1' = if (deployApps) {
+  name: 'appsUserAssignedIdentity'
+  scope: rg
+  params: {
+    location: location
+    tags: tags
+    name: '${abbrs.managedIdentityUserAssignedIdentities}apps-${resourceToken}'
+  }
+}
+
 // Create an App Service Plan to group applications under the same payment plan and SKU
 module appServicePlan 'br/public:avm/res/web/serverfarm:0.1.1' = {
   name: 'appserviceplan'
@@ -159,6 +170,31 @@ module functionApp './app/api.bicep' = {
     authExposedScopes: enableAuth ? entraApp!.outputs.exposedScopes : []
     authTenantId: enableAuth ? tenant().tenantId : ''
     delegatedPermissions: enableAuth ? delegatedPermissions : []
+  }
+}
+
+// Apps - MCP Apps with Fluent API (dynamic dashboard)
+module apps './app/api.bicep' = if (deployApps) {
+  name: 'apps'
+  scope: rg
+  params: {
+    name: appsFunctionAppName
+    serviceName: 'apps'
+    location: location
+    tags: tags
+    applicationInsightsName: monitoring.outputs.name
+    appServicePlanId: appServicePlan.outputs.resourceId
+    runtimeName: 'dotnet-isolated'
+    runtimeVersion: '10.0'
+    storageAccountName: storage.outputs.name
+    enableBlob: storageEndpointConfig.enableBlob
+    enableQueue: storageEndpointConfig.enableQueue
+    enableTable: storageEndpointConfig.enableTable
+    deploymentStorageContainerName: appsDeploymentStorageContainerName
+    identityId: appsUserAssignedIdentity!.outputs.resourceId
+    identityClientId: appsUserAssignedIdentity!.outputs.clientId
+    appSettings: {}
+    virtualNetworkSubnetResourceId: vnetEnabled ? serviceVirtualNetwork!.outputs.appSubnetID : ''
   }
 }
 

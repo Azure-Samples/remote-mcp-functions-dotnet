@@ -24,20 +24,42 @@ public class AppTools(ILogger<AppTools> logger)
     }
 
     /// <summary>
-    /// A dashboard MCP App with clipboard permissions and CSP configuration.
+    /// A dashboard MCP App that returns dynamic server data rendered by the UI.
     /// Demonstrates the full fluent API including WithCsp, WithPermissions, and WithStaticAssets.
+    /// The Vite-bundled UI in app/dist receives this data via the ext-apps SDK and renders
+    /// tiles, charts, and status indicators — proving the fluent API supports dynamic content.
     /// </summary>
     [Function(nameof(SnippetDashboard))]
     public string SnippetDashboard(
-        [McpToolTrigger("SnippetDashboard", "Opens a snippet dashboard with status information.")]
+        [McpToolTrigger("SnippetDashboard", "Opens a snippet dashboard with live server metrics.")]
             ToolInvocationContext context)
     {
         logger.LogInformation("SnippetDashboard tool invoked.");
+
+        var process = System.Diagnostics.Process.GetCurrentProcess();
+        var uptime = DateTime.UtcNow - process.StartTime.ToUniversalTime();
+
         return System.Text.Json.JsonSerializer.Serialize(new
         {
             Status = "Online",
             Runtime = System.Runtime.InteropServices.RuntimeInformation.FrameworkDescription,
-            Timestamp = DateTime.UtcNow
+            Environment = System.Runtime.InteropServices.RuntimeInformation.OSDescription,
+            MemoryMB = process.WorkingSet64 / (1024 * 1024),
+            Uptime = uptime.TotalMinutes < 1
+                ? $"{uptime.Seconds}s"
+                : uptime.TotalHours < 1
+                    ? $"{(int)uptime.TotalMinutes}m {uptime.Seconds}s"
+                    : $"{(int)uptime.TotalHours}h {uptime.Minutes}m",
+            Timestamp = DateTime.UtcNow.ToString("u"),
+            ChartTitle = "Request Latency (ms)",
+            Metrics = new[]
+            {
+                new { Label = "P50", Value = 12 },
+                new { Label = "P75", Value = 28 },
+                new { Label = "P90", Value = 45 },
+                new { Label = "P95", Value = 82 },
+                new { Label = "P99", Value = 156 },
+            }
         });
     }
 
