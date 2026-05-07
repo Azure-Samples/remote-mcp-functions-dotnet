@@ -19,7 +19,19 @@ This project demonstrates the MCP Apps fluent API (`v1.5.0`) for building MCP to
 - [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0)
 - [Node.js](https://nodejs.org/) (for building the dashboard UI)
 - [Azure Functions Core Tools](https://learn.microsoft.com/azure/azure-functions/functions-run-local?pivots=programming-language-csharp#install-the-azure-functions-core-tools) >= `4.5.0`
+- [Docker](https://www.docker.com/) (for the Azurite storage emulator)
 - An MCP-compatible host that supports MCP Apps (VS Code with GitHub Copilot, Claude Desktop, etc.)
+
+## Prepare your local environment
+
+An Azure Storage Emulator is needed for the Functions runtime. Start Azurite:
+
+```shell
+docker run -d -p 10000:10000 -p 10001:10001 -p 10002:10002 \
+    mcr.microsoft.com/azure-storage/azurite
+```
+
+> If you use the Azurite VS Code extension instead, run **Azurite: Start** now.
 
 ## Run locally
 
@@ -40,9 +52,15 @@ func start
 
 The MCP endpoint will be available at `http://localhost:7071/runtime/webhooks/mcp`.
 
-### 3. Connect and test
+### 3. Connect from VS Code 
 
-Open **.vscode/mcp.json**, start the server, then ask the agent to open the dashboard.
+Open **.vscode/mcp.json** in the workspace root. Find the server called **`local-mcp-function`** and click **Start** above the name. It points to:
+
+```
+http://localhost:7071/runtime/webhooks/mcp
+```
+
+In Copilot chat **agent** mode, ask the agent to open the dashboard or get the server time.
 
 ## Dynamic data rendering
 
