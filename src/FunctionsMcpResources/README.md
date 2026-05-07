@@ -101,6 +101,8 @@ MCP resources are attached as context in VS Code Chat (they aren't invoked like 
 
 `GetDocumentation` hardcodes content in a dictionary so the sample works without any setup, but for production you'd store the content externally (blobs, a database, files) and read it the way `GetSnippetResource` does with `[BlobInput]`.
 
+**Expected behavior:** Unlike tools and prompts, resources are not executed — they are read and attached as context. For example, selecting **ServerInfo** attaches JSON like `{"Name":"FunctionsMcpResources","Version":"1.4.0","Runtime":".NET 10.0.7","Timestamp":"2026-05-07T20:17:03Z"}` to the chat. You can then ask the model questions that reference this data.
+
 ### Redeploy and clean up
 
 - **Redeploy:** `azd deploy`

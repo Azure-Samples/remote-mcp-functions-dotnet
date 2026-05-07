@@ -1,6 +1,6 @@
 # FunctionsMcpApp — MCP Apps with Fluent API on Azure Functions (.NET/C#)
 
-This project demonstrates the MCP Apps fluent API (`v1.5.0-preview.1`) for building MCP tools that return interactive UI alongside data. Tools are configured with views, permissions, CSP policies, and static assets entirely in `Program.cs`.
+This project demonstrates the MCP Apps fluent API (`v1.5.0`) for building MCP tools that return interactive UI alongside data. Tools are configured with views, permissions, CSP policies, and static assets entirely in `Program.cs`.
 
 ## What are MCP Apps?
 
