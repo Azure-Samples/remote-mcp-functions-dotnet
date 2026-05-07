@@ -1,5 +1,12 @@
 ## [remote-mcp-functions-dotnet] Changelog
 
+<a name="1.2.0"></a>
+# 1.2.0
+
+*Features*
+* Updated Microsoft.Azure.Functions.Worker.Extensions.Mcp from 1.4.0 to 1.5.0 across all sample projects (FunctionsMcpTool, FunctionsMcpResources, FunctionsMcpPrompts, McpWeatherApp, FunctionsMcpApp)
+* Added `search_snippets` tool sample in FunctionsMcpTool demonstrating the new `WithInputSchema` and `WithOutputSchema` fluent APIs for declaring explicit JSON schemas for tool inputs and structured outputs
+
 <a name="1.1.0"></a>
 # 1.1.0
 
