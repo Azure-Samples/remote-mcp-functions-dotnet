@@ -24,22 +24,41 @@ This project is a .NET 10 Azure Function app that exposes MCP (Model Context Pro
 - [Azure Functions Core Tools](https://learn.microsoft.com/azure/azure-functions/functions-run-local?pivots=programming-language-csharp#install-the-azure-functions-core-tools) >= `4.5.0`
 - [Docker](https://www.docker.com/) (for the Azurite storage emulator — needed by the snippet resource template)
 
-## Run locally
+## Prepare your local environment
 
-Start Azurite (required for the snippet resource which uses blob storage):
+An Azure Storage Emulator is needed because the snippet resource reads blobs from storage. Start Azurite:
 
 ```shell
 docker run -d -p 10000:10000 -p 10001:10001 -p 10002:10002 \
     mcr.microsoft.com/azure-storage/azurite
 ```
 
+> If you use the Azurite VS Code extension instead, run **Azurite: Start** now.
+
+## Run locally
+
 From this directory (`src/FunctionsMcpResources`), start the Functions host:
 
 ```shell
-func start --port 7072
+func start
 ```
 
-The MCP endpoint will be available at `http://localhost:7072/runtime/webhooks/mcp`.
+The MCP endpoint will be available at `http://localhost:7071/runtime/webhooks/mcp`.
+
+## Connect from VS Code 
+
+Open **.vscode/mcp.json** in the workspace root. Find the server called **`local-mcp-function`** and click **Start** above the name. It points to:
+
+```
+http://localhost:7071/runtime/webhooks/mcp
+```
+
+MCP resources are attached as context in VS Code Chat (they aren't invoked like tools or prompts):
+
+1. Open the **Chat** panel.
+2. Click the **+** (Attach) button in the chat input.
+3. Select **MCP Resources**.
+4. Choose a resource (e.g. **ServerInfo**, **Documentation**).
 
 ## Deploy to Azure
 

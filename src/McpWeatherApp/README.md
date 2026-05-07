@@ -25,6 +25,17 @@ Azure Functions makes it easy to build both.
 - [Docker](https://www.docker.com/) (for the Azurite storage emulator)
 - An MCP-compatible host (VS Code with GitHub Copilot, Claude Desktop, etc.)
 
+## Prepare your local environment
+
+An Azure Storage Emulator is needed for the Functions runtime. Start Azurite:
+
+```shell
+docker run -d -p 10000:10000 -p 10001:10001 -p 10002:10002 \
+    mcr.microsoft.com/azure-storage/azurite
+```
+
+> If you use the Azurite VS Code extension instead, run **Azurite: Start** now.
+
 ## Getting Started
 
 ### 1. Build the UI

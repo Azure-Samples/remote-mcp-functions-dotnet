@@ -24,15 +24,36 @@ This project is a .NET 10 Azure Function app that exposes MCP (Model Context Pro
 - [Azure Functions Core Tools](https://learn.microsoft.com/azure/azure-functions/functions-run-local?pivots=programming-language-csharp#install-the-azure-functions-core-tools) >= `4.5.0`
 - [Docker](https://www.docker.com/) (for the Azurite storage emulator)
 
+## Prepare your local environment
+
+An Azure Storage Emulator is needed for the Functions runtime. Start Azurite:
+
+```shell
+docker run -d -p 10000:10000 -p 10001:10001 -p 10002:10002 \
+    mcr.microsoft.com/azure-storage/azurite
+```
+
+> If you use the Azurite VS Code extension instead, run **Azurite: Start** now.
+
 ## Run locally
 
 From this directory (`src/FunctionsMcpPrompts`), start the Functions host:
 
 ```shell
-func start --port 7073
+func start 
 ```
 
-The MCP endpoint will be available at `http://localhost:7073/runtime/webhooks/mcp`.
+The MCP endpoint will be available at `http://localhost:7071/runtime/webhooks/mcp`.
+
+## Connect from VS Code 
+
+Open **.vscode/mcp.json** in the workspace root. Find the server called **`local-mcp-function`** and click **Start** above the name. It points to:
+
+```
+http://localhost:7071/runtime/webhooks/mcp
+```
+
+Prompts appear as `/` slash commands in VS Code Chat. Type `/` and select a prompt (e.g. `/mcp.<server-name>.<prompt>`). 
 
 ## Deploy to Azure
 
