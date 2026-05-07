@@ -56,6 +56,13 @@ internal sealed class ToolsInformation
     public const string BadgeColorPropertyName = "color";
     public const string BadgeColorPropertyDescription = "Hex color for the value background (e.g., '#4CAF50' for green). Defaults to green.";
 
+    // Search snippets tool (demonstrates WithInputSchema / WithOutputSchema)
+    public const string SearchSnippetsToolName = "search_snippets";
+    public const string SearchSnippetsToolDescription =
+        "Searches saved snippets by name prefix. Demonstrates explicit JSON input and output schemas configured in Program.cs.";
+    public const string SearchPrefixPropertyName = "prefix";
+    public const string SearchLimitPropertyName = "limit";
+
     // Website preview tool
     public const string GetWebsitePreviewToolName = "get_website_preview";
     public const string GetWebsitePreviewToolDescription =

@@ -1,6 +1,6 @@
 # FunctionsMcpTool — Remote MCP Server on Azure Functions (.NET/C#)
 
-This project is a .NET 10 Azure Function app that exposes multiple MCP (Model Context Protocol) tools as a remote MCP server. It includes tools for snippets, QR code generation, badges, echo, hello, and a **hello with auth** tool that demonstrates the On-Behalf-Of (OBO) flow to call Microsoft Graph as the signed-in user.
+This project is a .NET 10 Azure Function app that exposes multiple MCP (Model Context Protocol) tools as a remote MCP server. It includes tools for snippets (including a `search_snippets` sample that declares explicit input/output JSON schemas), QR code generation, badges, echo, hello, and a **hello with auth** tool that demonstrates the On-Behalf-Of (OBO) flow to call Microsoft Graph as the signed-in user.
 
 > **Note:** MCP prompts and resource templates are in separate projects — see [FunctionsMcpPrompts](../FunctionsMcpPrompts/) and [FunctionsMcpResources](../FunctionsMcpResources/).
 
