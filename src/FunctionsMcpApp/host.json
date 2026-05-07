@@ -16,4 +16,5 @@
             "enableLiveMetricsFilters": true
         }
     }
+    "telemetryMode": "OpenTelemetry"
 }

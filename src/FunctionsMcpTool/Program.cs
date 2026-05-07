@@ -1,19 +1,23 @@
+using Azure.Monitor.OpenTelemetry.Exporter;
 using Azure.Storage.Blobs;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Builder;
+using Microsoft.Azure.Functions.Worker.OpenTelemetry;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using OpenTelemetry;
 using static FunctionsMcpTool.ToolsInformation;
 
 var builder = FunctionsApplication.CreateBuilder(args);
 
 builder.ConfigureFunctionsWebApplication();
 
-builder.Services
-    .AddApplicationInsightsTelemetryWorkerService()
-    .ConfigureFunctionsApplicationInsights()
-    .AddSingleton(_ => new BlobServiceClient(
-        Environment.GetEnvironmentVariable("AzureWebJobsStorage")));
+builder.Services.AddOpenTelemetry()
+    .UseFunctionsWorkerDefaults()
+    .UseAzureMonitorExporter();
+
+builder.Services.AddSingleton(_ => new BlobServiceClient(
+    Environment.GetEnvironmentVariable("AzureWebJobsStorage")));
 
 // Demonstrate how you can define tool properties in Program.cs
 // without requiring McpToolProperty input binding attributes:
