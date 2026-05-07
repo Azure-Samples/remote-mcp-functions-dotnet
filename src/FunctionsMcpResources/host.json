@@ -7,14 +7,5 @@
                 "webhookAuthorizationLevel": "Anonymous"
             }
         }    
-    },
-    "logging": {
-        "applicationInsights": {
-            "samplingSettings": {
-                "isEnabled": true,
-                "excludedTypes": "Request"
-            },
-            "enableLiveMetricsFilters": true
-        }
     }
 }
