@@ -20,8 +20,8 @@
     "preAuthorizedClientIds": {
       "value": "${PRE_AUTHORIZED_CLIENT_IDS}"
     },
-    "deployService": {
-      "value": "${DEPLOY_SERVICE}"
+    "enableAuth": {
+      "value": "${ENABLE_AUTH}"
     }
   }
 }

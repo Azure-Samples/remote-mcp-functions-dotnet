@@ -8,8 +8,9 @@ This project is a .NET 10 Azure Function app that exposes MCP (Model Context Pro
 
 | Resource | URI | Description |
 |----------|-----|-------------|
-| `Snippet` | `snippet://{Name}` | Resource template that reads a code snippet by name from blob storage. Clients discover it via `resources/templates/list` and substitute the `Name` parameter. |
 | `ServerInfo` | `info://server` | Static resource that returns server name, version, runtime, and timestamp. |
+| `Documentation` | `docs://{Topic}` | Resource template that returns documentation for a given topic. Available topics: `mcp-resources`, `mcp-tools`, `mcp-prompts`. |
+| `Snippet` | `snippet://{Name}` | Resource template that reads a code snippet by name from blob storage. Requires a snippet saved in the `snippets` blob container. |
 
 ## Key concepts
 
@@ -42,11 +43,148 @@ The MCP endpoint will be available at `http://localhost:7072/runtime/webhooks/mc
 
 ## Deploy to Azure
 
+### Step 1: Sign in
+
 ```shell
-azd env set DEPLOY_SERVICE resources
-azd provision
-azd deploy --service resources
+az login
+azd auth login
 ```
+
+### Step 2: Create an environment
+
+```shell
+azd env new <environment-name>
+```
+
+This also becomes the resource group name.
+
+### Step 3: Provision and deploy
+
+By default, OAuth-based authentication is enabled using the [built-in MCP auth feature](https://learn.microsoft.com/azure/app-service/configure-authentication-mcp?toc=/azure/azure-functions/toc.json&bc=/azure/azure-functions/breadcrumb/toc.json) with Microsoft Entra as the identity provider.
+
+Configure VS Code as an allowed client application for Microsoft Entra:
+
+```shell
+azd env set PRE_AUTHORIZED_CLIENT_IDS aebc6443-996d-45c2-90f0-388ff96faa56
+```
+
+Optionally enable VNet isolation:
+
+```shell
+azd env set VNET_ENABLED true
+```
+
+Deploy the project. When prompted, pick your subscription and an Azure region.
+
+```shell
+azd up
+```
+
+### Connect to the remote MCP server
+
+Open **`.vscode/mcp.json`** and click **Start** above the remote server entry for this project. You'll be prompted for `functionapp-name` — find it in your `azd` command output or the `.azure/<env>/.env` file. Since authentication is enabled, you'll also be prompted to sign in with Microsoft.
+
+> **Tip:** Click **More... → Show Output** above the server name to see request/response details.
+
+### Test your resources
+
+MCP resources are attached as context in VS Code Chat (they aren't invoked like tools or prompts).
+
+1. Open the **Chat** panel.
+2. Click the **+** (Attach) button in the chat input.
+3. Select **MCP Resources**.
+4. Choose a resource:
+   - **`Documentation`** — enter a topic (e.g. `mcp-resources`, `mcp-tools`, `mcp-prompts`). Returns reference documentation.
+   - **`ServerInfo`** — no parameters needed. Returns server name, version, runtime, and timestamp.
+   - **`Snippet`** — enter a snippet name. Requires a matching blob in storage (use the `save_snippet` tool from [FunctionsMcpTool](../FunctionsMcpTool/) to create one first).
+5. The resource content is attached to the conversation as context for the model.
+
+`GetDocumentation` hardcodes content in a dictionary so the sample works without any setup, but for production you'd store the content externally (blobs, a database, files) and read it the way `GetSnippetResource` does with `[BlobInput]`.
+
+**Expected behavior:** Unlike tools and prompts, resources are not executed — they are read and attached as context. For example, selecting **ServerInfo** attaches JSON like `{"Name":"FunctionsMcpResources","Version":"1.4.0","Runtime":".NET 10.0.7","Timestamp":"2026-05-07T20:17:03Z"}` to the chat. You can then ask the model questions that reference this data.
+
+### Redeploy and clean up
+
+- **Redeploy:** `azd deploy`
+- **Clean up all resources:** `azd down`
+
+### Other auth options 
+
+#### Key-based access
+
+1. Set the auth level to `function` in `FunctionsMcpResources/host.json`:
+
+    ```json
+    "extensions": {
+        "mcp": {
+            "system": {
+                "webhookAuthorizationLevel": "function"
+            }
+        }    
+    },
+    ```
+
+2. Disable built-in MCP auth before deploying:
+
+    ```shell
+    azd env set ENABLE_AUTH false
+    ```
+
+3. Deploy with `azd up`.
+
+4. Get the MCP extension system key from the Azure portal or CLI:
+
+    ```shell
+    az functionapp keys list --name <functionapp-name> --resource-group <resource-group> --query "systemKeys.mcp_extension" -o tsv
+    ```
+
+5. Add a key-based server entry to `.vscode/mcp.json` (VS Code will prompt you for both values on connect):
+
+    ```jsonc
+    {
+        "servers": {
+            "remote-functions-mcp-key": {
+                "type": "http",
+                "url": "https://${input:functionapp-name}.azurewebsites.net/runtime/webhooks/mcp",
+                "headers": {
+                    "x-functions-key": "${input:functions-mcp-extension-system-key}"
+                }
+            }
+        },
+        "inputs": [
+            {
+                "type": "promptString",
+                "id": "functionapp-name",
+                "description": "Azure Functions app name"
+            },
+            {
+                "type": "promptString",
+                "id": "functions-mcp-extension-system-key",
+                "description": "Azure Functions MCP extension system key",
+                "password": true
+            }
+        ]
+    }
+    ```
+
+#### Anonymous access
+
+To disable authentication entirely, set the following variable _before_ running `azd up`:
+
+```shell
+azd env set ENABLE_AUTH false
+```
+
+Then deploy with `azd up`. Anyone will be able to connect to the remote MCP server. This is **not** recommended unless the server is meant to be accessible by anyone (for example, serves publicly available info or data). 
+
+## Troubleshooting
+
+| Problem | Solution |
+|---------|----------|
+| Connection refused locally | Ensure Azurite is running (`docker run -p 10000:10000 -p 10001:10001 -p 10002:10002 mcr.microsoft.com/azure-storage/azurite`) |
+| API version not supported by Azurite | Pull the latest image (`docker pull mcr.microsoft.com/azure-storage/azurite`) and restart |
+| `azd up` provision succeeded but deploy immediately failed: `unable to find a resource tagged with 'azd-service-name: mcp'` | The tag was provisioned but not propagated yet when `azd deploy` looked it up — run `azd deploy` again |
+| `azd deploy` fails with Kudu restart error: `deployment was partially successful: [KuduSpecializer] Kudu has been restarted after package deployed` | Transient error — run `azd deploy` again |
 
 ## Examining the code
 
@@ -69,3 +207,9 @@ public string? GetSnippetResource(
 ```
 
 The `{mcpresourceargs.Name}` binding expression automatically extracts the `Name` parameter from the resource URI and passes it to the blob input binding.
+
+## Next Steps
+
++ Learn more about the [Azure Functions MCP extension](https://learn.microsoft.com/azure/azure-functions/functions-bindings-mcp?pivots=programming-language-typescript)
++ Connect your MCP server to [Foundry agents](https://learn.microsoft.com/azure/azure-functions/functions-mcp-foundry-tools?tabs=oauth-id%2Cmcp-extension%2Cfoundry)
++ Add [API Management](https://github.com/Azure-Samples/remote-mcp-apim-functions-python) to your MCP server

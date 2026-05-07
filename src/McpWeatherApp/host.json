@@ -3,6 +3,9 @@
   "telemetryMode": "OpenTelemetry",
   "extensions": {
     "mcp": {
+      "system": {
+                "webhookAuthorizationLevel": "Anonymous"
+            },
       "serverName": "Weather App Server",
       "serverVersion": "1.0.0",
       "instructions": "This is a Weather App that allows you to get current weather information for a specified location."

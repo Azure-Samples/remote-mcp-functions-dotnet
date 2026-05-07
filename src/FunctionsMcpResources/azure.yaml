@@ -1,0 +1,13 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/Azure/azure-dev/main/schemas/v1.0/azure.yaml.json
+
+name: remote-mcp-functions-resources
+metadata:
+  template: remote-mcp-functions-dotnet@1.0.1
+infra:
+  provider: bicep
+  path: ../../infra
+services:
+  mcp:
+    project: ./
+    language: dotnet
+    host: function
