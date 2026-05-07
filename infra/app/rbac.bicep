@@ -1,14 +1,6 @@
 param storageAccountName string
 param appInsightsName string
-<<<<<<< HEAD
 param managedIdentityPrincipalId string = '' // Principal ID for the Managed Identity
-=======
-param managedIdentityPrincipalId string = '' // Principal ID for the API Managed Identity
-param weatherManagedIdentityPrincipalId string = '' // Principal ID for the Weather App Managed Identity
-param resourcesManagedIdentityPrincipalId string = '' // Principal ID for the Resources App Managed Identity
-param promptsManagedIdentityPrincipalId string = '' // Principal ID for the Prompts App Managed Identity
-param appsManagedIdentityPrincipalId string = '' // Principal ID for the Apps Managed Identity
->>>>>>> origin/main
 param userIdentityPrincipalId string = '' // Principal ID for the User Identity
 param allowUserIdentityPrincipal bool = false // Flag to enable user identity role assignments
 param enableBlob bool = true
