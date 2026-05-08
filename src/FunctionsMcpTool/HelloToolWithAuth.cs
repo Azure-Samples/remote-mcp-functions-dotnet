@@ -72,8 +72,11 @@ public class HelloToolWithAuth(ILogger<HelloToolWithAuth> logger, IHostEnvironme
         catch (AuthenticationFailedException ex)
         {
             logger.LogError(ex, "AuthenticationFailedException: {Message}", ex.Message);
+
+            var innerMsg = ex.InnerException?.Message;
+            var detail = !string.IsNullOrEmpty(innerMsg) ? innerMsg : ex.Message;
             throw new InvalidOperationException(
-                "Failed to authenticate with Microsoft Graph. Check your credentials and permissions.", ex);
+                $"Failed to authenticate with Microsoft Graph: {detail}", ex);
         }
         catch (Exception ex)
         {
