@@ -12,9 +12,13 @@ var builder = FunctionsApplication.CreateBuilder(args);
 
 builder.ConfigureFunctionsWebApplication();
 
-builder.Services.AddOpenTelemetry()
-    .UseFunctionsWorkerDefaults()
-    .UseAzureMonitorExporter();
+var otel = builder.Services.AddOpenTelemetry()
+    .UseFunctionsWorkerDefaults();
+
+if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("APPLICATIONINSIGHTS_CONNECTION_STRING")))
+{
+    otel.UseAzureMonitorExporter();
+}
 
 builder.Services.AddSingleton(_ => new BlobServiceClient(
     Environment.GetEnvironmentVariable("AzureWebJobsStorage")));
