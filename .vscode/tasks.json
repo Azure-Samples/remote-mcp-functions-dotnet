@@ -85,7 +85,10 @@
 			"type": "pickString",
 			"description": "Which project do you want to debug?",
 			"options": [
+				"FunctionsMcpApp",
 				"FunctionsMcpTool",
+				"FunctionsMcpResources",
+				"FunctionsMcpPrompts",
 				"McpWeatherApp"
 			],
 			"default": "FunctionsMcpTool"

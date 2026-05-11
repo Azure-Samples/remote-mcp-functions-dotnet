@@ -11,9 +11,9 @@ var builder = FunctionsApplication.CreateBuilder(args);
 
 builder.ConfigureFunctionsWebApplication();
 
-builder.Services.AddOpenTelemetry()
-    .UseFunctionsWorkerDefaults()
-    .UseAzureMonitorExporter();
+// builder.Services.AddOpenTelemetry()
+//     .UseFunctionsWorkerDefaults()
+//     .UseAzureMonitorExporter();
 
 // Configure metadata on resources:
 builder

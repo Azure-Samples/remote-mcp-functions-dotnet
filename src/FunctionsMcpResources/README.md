@@ -218,14 +218,14 @@ public string? GetSnippetResource(
         Description = SnippetResourceDescription,
         MimeType = "application/json")]
         ResourceInvocationContext context,
-    [BlobInput("snippets/{mcpresourceargs.Name}.json")]
+    [BlobInput("snippets/{Name}.json")]
         string? snippetContent)
 {
     return snippetContent;
 }
 ```
 
-The `{mcpresourceargs.Name}` binding expression automatically extracts the `Name` parameter from the resource URI and passes it to the blob input binding.
+URI template parameters from `[McpResourceTrigger]` (here, `Name` from `snippet://{Name}`) are flattened directly into the binding data, so `{Name}` in the `[BlobInput]` expression automatically resolves to the value supplied by the client.
 
 ## Next Steps
 

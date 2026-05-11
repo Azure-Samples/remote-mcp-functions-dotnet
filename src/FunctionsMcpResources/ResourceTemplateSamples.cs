@@ -21,7 +21,7 @@ public class ResourceTemplateSamples(ILogger<ResourceTemplateSamples> logger)
             Description = SnippetResourceDescription,
             MimeType = "application/json")]
             ResourceInvocationContext context,
-        [BlobInput("snippets/{mcpresourceargs.Name}.json")]
+        [BlobInput("snippets/{Name}.json")]
             string? snippetContent)
     {
         logger.LogInformation("Snippet resource template invoked: {Uri}", context.Uri);

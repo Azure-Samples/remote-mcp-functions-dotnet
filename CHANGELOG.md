@@ -7,6 +7,9 @@
 * Updated Microsoft.Azure.Functions.Worker.Extensions.Mcp from 1.4.0 to 1.5.0 across all sample projects (FunctionsMcpTool, FunctionsMcpResources, FunctionsMcpPrompts, McpWeatherApp, FunctionsMcpApp)
 * Added `search_snippets` tool sample in FunctionsMcpTool demonstrating the new `WithInputSchema` and `WithOutputSchema` fluent APIs for declaring explicit JSON schemas for tool inputs and structured outputs
 
+*Bug Fixes*
+* Fixed `[BlobInput]` binding expression in `FunctionsMcpResources.GetSnippetResource` to use `{Name}` instead of the non-existent `{mcpresourceargs.Name}` (URI template parameters from `[McpResourceTrigger]` are flattened directly into binding data)
+
 <a name="1.1.0"></a>
 # 1.1.0
 
