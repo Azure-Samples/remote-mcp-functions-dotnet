@@ -131,13 +131,13 @@ MCP resources are attached as context in VS Code Chat (they aren't invoked like 
 
 #### Key-based access
 
-1. Set the auth level to `function` in `FunctionsMcpResources/host.json`:
+1. Set the auth level to `System` in `FunctionsMcpResources/host.json`:
 
     ```json
     "extensions": {
         "mcp": {
             "system": {
-                "webhookAuthorizationLevel": "function"
+                "webhookAuthorizationLevel": "System"
             }
         }    
     },
