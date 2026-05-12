@@ -120,7 +120,7 @@ For example, select `/mcp.remote-functions-mcp-oauth.summarize_content`, enter `
 
 #### Key-based access
 
-1. Set the auth level to `system` in `FunctionsMcpPrompts/host.json`:
+1. Set the auth level to `System` in `FunctionsMcpPrompts/host.json`:
 
     ```json
     "extensions": {

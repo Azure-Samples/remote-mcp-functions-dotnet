@@ -224,7 +224,7 @@ Open **`.vscode/mcp.json`** and click **Start** above the remote server entry fo
 
 #### Key-based access
 
-1. Set the auth level to `system` in `FunctionsMcpApp/host.json`:
+1. Set the auth level to `System` in `FunctionsMcpApp/host.json`:
 
     ```json
     "extensions": {
