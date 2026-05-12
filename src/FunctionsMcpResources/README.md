@@ -137,7 +137,7 @@ MCP resources are attached as context in VS Code Chat (they aren't invoked like 
     "extensions": {
         "mcp": {
             "system": {
-                "webhookAuthorizationLevel": "system"
+                "webhookAuthorizationLevel": "System"
             }
         }    
     },

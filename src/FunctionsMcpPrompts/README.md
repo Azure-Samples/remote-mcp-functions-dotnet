@@ -126,7 +126,7 @@ For example, select `/mcp.remote-functions-mcp-oauth.summarize_content`, enter `
     "extensions": {
         "mcp": {
             "system": {
-                "webhookAuthorizationLevel": "system"
+                "webhookAuthorizationLevel": "System"
             }
         }    
     },

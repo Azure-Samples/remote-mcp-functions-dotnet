@@ -230,7 +230,7 @@ Open **`.vscode/mcp.json`** and click **Start** above the remote server entry fo
     "extensions": {
         "mcp": {
             "system": {
-                "webhookAuthorizationLevel": "system"
+                "webhookAuthorizationLevel": "System"
             }
         }    
     },
