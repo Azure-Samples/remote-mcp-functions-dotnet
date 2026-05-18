@@ -9,7 +9,6 @@ This project is a .NET 10 Azure Function app that exposes MCP (Model Context Pro
 | Resource | URI | Description |
 |----------|-----|-------------|
 | `ServerInfo` | `info://server` | Static resource that returns server name, version, runtime, and timestamp. |
-| `Documentation` | `docs://{Topic}` | Resource template that returns documentation for a given topic. Available topics: `mcp-resources`, `mcp-tools`, `mcp-prompts`. |
 | `Snippet` | `snippet://{Name}` | Resource template that reads a code snippet by name from blob storage. Requires a snippet saved in the `snippets` blob container. |
 
 ## Key concepts
@@ -113,14 +112,11 @@ MCP resources are attached as context in VS Code Chat (they aren't invoked like 
 2. Click the **+** (Attach) button in the chat input.
 3. Select **MCP Resources**.
 4. Choose a resource:
-   - **`Documentation`** — enter a topic (e.g. `mcp-resources`, `mcp-tools`, `mcp-prompts`). Returns reference documentation.
    - **`ServerInfo`** — no parameters needed. Returns server name, version, runtime, and timestamp.
    - **`Snippet`** — enter a snippet name. Requires a matching blob in storage (use the `save_snippet` tool from [FunctionsMcpTool](../FunctionsMcpTool/) to create one first).
 5. The resource content is attached to the conversation as context for the model.
 
-`GetDocumentation` hardcodes content in a dictionary so the sample works without any setup, but for production you'd store the content externally (blobs, a database, files) and read it the way `GetSnippetResource` does with `[BlobInput]`.
-
-**Expected behavior:** Unlike tools and prompts, resources are not executed — they are read and attached as context. For example, selecting **ServerInfo** attaches JSON like `{"Name":"FunctionsMcpResources","Version":"1.4.0","Runtime":".NET 10.0.7","Timestamp":"2026-05-07T20:17:03Z"}` to the chat. You can then ask the model questions that reference this data.
+**Expected behavior:** Unlike tools and prompts, resources are not executed; they are read and attached as context. For example, selecting **ServerInfo** attaches JSON like `{"Name":"FunctionsMcpResources","Version":"1.4.0","Runtime":".NET 10.0.7","Timestamp":"2026-05-07T20:17:03Z"}` to the chat. You can then ask the model questions that reference this data.
 
 ### Redeploy and clean up
 
