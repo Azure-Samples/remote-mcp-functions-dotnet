@@ -41,7 +41,15 @@ function renderTiles(data: DashboardData): void {
   for (const t of tiles) {
     const tile = document.createElement("div");
     tile.className = "tile";
-    tile.innerHTML = `<h3>${t.label}</h3><div class="value">${t.value}</div>`;
+
+    const heading = document.createElement("h3");
+    heading.textContent = t.label;
+
+    const value = document.createElement("div");
+    value.className = "value";
+    value.textContent = t.value;
+
+    tile.append(heading, value);
     tilesContainer.appendChild(tile);
   }
 }
@@ -69,10 +77,20 @@ function renderChart(data: DashboardData): void {
     const pct = (v / maxVal) * 100;
     const group = document.createElement("div");
     group.className = "bar-group";
-    group.innerHTML = `
-      <span class="bar-value">${v}</span>
-      <div class="bar" style="height: ${Math.max(pct, 2)}%"></div>
-      <span class="bar-label">${lbl(metric)}</span>`;
+
+    const value = document.createElement("span");
+    value.className = "bar-value";
+    value.textContent = String(v);
+
+    const bar = document.createElement("div");
+    bar.className = "bar";
+    bar.style.height = `${Math.max(pct, 2)}%`;
+
+    const label = document.createElement("span");
+    label.className = "bar-label";
+    label.textContent = lbl(metric);
+
+    group.append(value, bar, label);
     chart.appendChild(group);
   }
 }
